@@ -3,315 +3,312 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>bounty-landing</title>
+<title>MISSION BOARD</title>
 
 <!-- PayPal SDK -->
 <script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=USD"></script>
 
 <style>
 
+* {
+  box-sizing: border-box;
+}
+
 body {
-    background-color: #000;
-    color: #ff2a2a;
-    font-family: Consolas, monospace;
-    margin: 0;
+  margin: 0;
+  background: radial-gradient(circle at top right, #1a0000, #000);
+  font-family: 'Segoe UI', sans-serif;
+  color: white;
 }
 
-.container {
-    width: 95%;
-    max-width: 1300px;
-    margin: auto;
+/* HERO SECTION */
+.hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 60px 10%;
 }
 
-h1 {
-    text-align: center;
-    font-size: 60px;
+.hero-text h1 {
+  font-size: 70px;
+  color: #ff3c3c;
+  letter-spacing: 4px;
+  margin: 0;
+  text-shadow: 0 0 20px red;
 }
 
-.description {
-    text-align: center;
-    font-size: 22px;
-    margin-bottom: 20px;
+.hero-text p {
+  margin-top: 20px;
+  font-size: 20px;
+  max-width: 600px;
+  opacity: 0.8;
 }
 
 .countdown {
-    text-align: center;
-    font-size: 36px;
-    margin-bottom: 30px;
+  margin-top: 25px;
+  font-size: 28px;
+  background: #111;
+  padding: 12px 20px;
+  display: inline-block;
+  border-radius: 8px;
+  border: 1px solid #ff2a2a;
 }
 
-.board {
-    border: 2px solid red;
-    padding: 20px;
-    margin-bottom: 20px;
+/* 3D BASKETBALL */
+.hero-ball img {
+  width: 400px;
+  filter: drop-shadow(0 0 40px red);
+  animation: float 4s ease-in-out infinite;
 }
 
-.flex {
-    display: flex;
-    gap: 20px;
+@keyframes float {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-15px) rotate(8deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
 }
 
-.flex > div {
-    flex: 1;
+/* PANELS */
+.section {
+  padding: 40px 10%;
+}
+
+.panel {
+  background: linear-gradient(145deg, #140000, #000);
+  border: 1px solid #ff2a2a;
+  border-radius: 10px;
+  padding: 25px;
+  margin-bottom: 30px;
+  box-shadow: 0 0 20px rgba(255,0,0,0.2);
+}
+
+.panel h2 {
+  margin-top: 0;
+  color: #ff4c4c;
 }
 
 input, textarea {
-    width: 100%;
-    background: black;
-    border: 1px solid red;
-    color: red;
-    padding: 10px;
-    margin-bottom: 10px;
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: #000;
+  border: 1px solid #ff2a2a;
+  color: white;
+  border-radius: 5px;
 }
 
 button {
-    background: red;
-    color: black;
-    padding: 12px;
-    border: none;
-    cursor: pointer;
-    font-weight: bold;
+  padding: 12px 20px;
+  border: none;
+  background: #ff2a2a;
+  color: black;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: 0.3s;
 }
 
 button:hover {
-    background: #ff4444;
+  background: #ff5555;
+  box-shadow: 0 0 15px red;
+}
+
+.flex {
+  display: flex;
+  gap: 30px;
+}
+
+.flex > div {
+  flex: 1;
+}
+
+.mission {
+  padding: 10px;
+  border-bottom: 1px solid #ff2a2a55;
 }
 
 .hidden {
-    display: none;
-}
-
-.logo {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-}
-
-#dashboard {
-    display: none;
+  display: none;
 }
 
 </style>
-
 </head>
+
 <body>
 
-<div class="logo">
-<svg width="120" height="120" viewBox="0 0 120 120">
-<circle cx="60" cy="60" r="40" stroke="red" stroke-width="3" fill="none"/>
-<path d="M20 60 H100" stroke="red" stroke-width="2"/>
-<path d="M60 20 V100" stroke="red" stroke-width="2"/>
-<line x1="10" y1="90" x2="100" y2="30" stroke="red" stroke-width="4"/>
-<polygon points="100,30 90,35 95,45" fill="red"/>
-<text x="80" y="55" fill="red" font-size="18">$$$</text>
-</svg>
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-text">
+    <h1>MISSION BOARD</h1>
+    <p>Competitive missions that allow gaming communities to hold disruptive players accountable through verified gameplay challenges.</p>
+    <div class="countdown" id="countdown"></div>
+  </div>
+
+  <div class="hero-ball">
+    <!-- Replace with your basketball image if desired -->
+    <img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/Basketball.png">
+  </div>
 </div>
 
-<div class="container">
+<div class="section">
 
-<h1>MISSION BOARD</h1>
-
-<div class="description">
-Competitive missions that allow gaming communities to hold disruptive players accountable through verified gameplay challenges
+<!-- AUTH -->
+<div class="panel" id="auth">
+  <h2>Login or Register</h2>
+  <input id="username" placeholder="Username">
+  <input id="password" type="password" placeholder="Password">
+  <button onclick="register()">Register</button>
+  <button onclick="login()">Login</button>
 </div>
-
-<div class="countdown" id="countdown"></div>
-
-
-<!-- AUTH SECTION -->
-<div class="board" id="auth">
-<h2>Login or Register</h2>
-<input id="username" placeholder="Username">
-<input id="password" type="password" placeholder="Password">
-<button onclick="register()">Register</button>
-<button onclick="login()">Login</button>
-</div>
-
 
 <!-- DASHBOARD -->
-<div id="dashboard">
+<div id="dashboard" class="hidden">
 
 <div class="flex">
 
-<!-- CREATE BOUNTY -->
-<div class="board">
-<h2>Report Player & Add Bounty</h2>
-<input id="target" placeholder="Player Tag">
-<textarea id="reason" placeholder="Reason"></textarea>
-<input id="amount" type="number" placeholder="Amount">
-
-<div id="paypal-button-container"></div>
-
+<div class="panel">
+  <h2>Report Player & Add Bounty</h2>
+  <input id="target" placeholder="Player Tag">
+  <textarea id="reason" placeholder="Reason"></textarea>
+  <input id="amount" type="number" placeholder="Amount">
+  <div id="paypal-button-container"></div>
 </div>
 
-
-<!-- CLAIM BOUNTY -->
-<div class="board">
-<h2>Claim Bounty</h2>
-<input id="claimTarget" placeholder="Player">
-<input id="clip" placeholder="Clip Link">
-<input id="paypalEmail" placeholder="Your PayPal Email">
-<button onclick="submitClaim()">Submit Claim</button>
+<div class="panel">
+  <h2>Claim Bounty</h2>
+  <input id="missionId" placeholder="Mission ID">
+  <input id="clip" placeholder="Clip Link">
+  <input id="paypalEmail" placeholder="Your PayPal Email">
+  <button onclick="submitClaim()">Submit Claim</button>
 </div>
 
 </div>
 
-
-<!-- ACTIVE MISSIONS -->
-<div class="board">
-<h2>Active Missions</h2>
-<div id="missions"></div>
+<div class="panel">
+  <h2>Active Missions</h2>
+  <div id="missions"></div>
 </div>
 
-
 </div>
-
-
 </div>
-
 
 <script>
+
+const BASE_URL = "https://bounty-landing-backend.onrender.com";
 
 // COUNTDOWN
 let end = new Date();
 end.setDate(end.getDate() + 7);
-
 setInterval(() => {
-
-let now = new Date();
-let diff = end - now;
-
-let d = Math.floor(diff / (1000*60*60*24));
-let h = Math.floor(diff / (1000*60*60)) % 24;
-let m = Math.floor(diff / (1000*60)) % 60;
-let s = Math.floor(diff / 1000) % 60;
-
-countdown.innerHTML = `${d}d ${h}h ${m}m ${s}s`;
-
+  let now = new Date();
+  let diff = end - now;
+  let d = Math.floor(diff / (1000*60*60*24));
+  let h = Math.floor(diff / (1000*60*60)) % 24;
+  let m = Math.floor(diff / (1000*60)) % 60;
+  let s = Math.floor(diff / 1000) % 60;
+  countdown.innerHTML = `${d}d ${h}h ${m}m ${s}s`;
 }, 1000);
-
 
 // REGISTER
 async function register() {
-
-await fetch('/api/register', {
-method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({
-username:username.value,
-password:password.value
-})
-});
-
-alert('Registered');
-
+  await fetch(BASE_URL + "/register", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      username: username.value,
+      password: password.value
+    })
+  });
+  alert("Registered!");
 }
-
 
 // LOGIN
 async function login() {
-
-let res = await fetch('/api/login',{
-method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({
-username:username.value,
-password:password.value
-})
-});
-
-let data = await res.json();
-
-if(data.success) {
-
-auth.style.display='none';
-dashboard.style.display='block';
-loadMissions();
-
+  let res = await fetch(BASE_URL + "/login", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      username: username.value,
+      password: password.value
+    })
+  });
+  let data = await res.json();
+  if (data.token) {
+    localStorage.setItem("token", data.token);
+    auth.classList.add("hidden");
+    dashboard.classList.remove("hidden");
+    loadMissions();
+  } else {
+    alert("Login failed");
+  }
 }
-
-}
-
 
 // LOAD MISSIONS
 async function loadMissions() {
-
-let res = await fetch('/api/missions');
-let missions = await res.json();
-
-missionsDiv.innerHTML='';
-
-missions.forEach(m=>{
-
-missions.innerHTML += `
-
-<div>
-Player: ${m.target}<br>
-Reward: $${m.amount}
-</div>
-
-`;
-
-});
-
+  let res = await fetch(BASE_URL + "/missions");
+  let data = await res.json();
+  missions.innerHTML = "";
+  data.forEach(m => {
+    missions.innerHTML += `
+      <div class="mission">
+        <strong>ID:</strong> ${m.id} |
+        <strong>Player:</strong> ${m.target} |
+        <strong>Reward:</strong> $${m.amount}
+      </div>
+    `;
+  });
 }
-
 
 // CLAIM
 async function submitClaim() {
+  let token = localStorage.getItem("token");
+  if (!token) return alert("Login required");
 
-await fetch('/api/claim',{
-method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({
-target:claimTarget.value,
-clip:clip.value,
-paypal:paypalEmail.value
-})
-});
+  await fetch(BASE_URL + "/claims", {
+    method: "POST",
+    headers: {
+      "Content-Type":"application/json",
+      "Authorization":"Bearer " + token
+    },
+    body: JSON.stringify({
+      missionId: missionId.value,
+      clip: clip.value,
+      paypal: paypalEmail.value
+    })
+  });
 
-alert('Claim submitted');
-
+  alert("Claim submitted");
 }
 
-
-// PAYPAL BUTTON
+// PAYPAL
 paypal.Buttons({
+  createOrder: (data, actions) => {
+    return actions.order.create({
+      purchase_units: [{
+        amount: { value: amount.value }
+      }]
+    });
+  },
+  onApprove: async (data, actions) => {
+    await actions.order.capture();
+    let token = localStorage.getItem("token");
 
-createOrder: function(data, actions) {
+    await fetch(BASE_URL + "/missions", {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "Authorization":"Bearer " + token
+      },
+      body:JSON.stringify({
+        target:target.value,
+        reason:reason.value,
+        amount:amount.value
+      })
+    });
 
-return actions.order.create({
-purchase_units: [{
-amount: {
-value: amount.value
-}
-}]
-});
-
-},
-
-onApprove: async function(data, actions) {
-
-let order = await actions.order.capture();
-
-await fetch('/api/createMission',{
-method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({
-target:target.value,
-reason:reason.value,
-amount:amount.value,
-paymentID:order.id
-})
-});
-
-alert('Bounty created');
-loadMissions();
-
-}
-
-}).render('#paypal-button-container');
-
+    alert("Mission created!");
+    loadMissions();
+  }
+}).render("#paypal-button-container");
 
 </script>
 
