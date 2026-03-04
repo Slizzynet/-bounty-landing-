@@ -5,30 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MISSION BOARD</title>
 
-<!-- PayPal SDK -->
-<script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=USD"></script>
+<!-- 🔴 REPLACE WITH YOUR LIVE CLIENT ID -->
+<script src="https://www.paypal.com/sdk/js?client-id=REPLACE_WITH_YOUR_LIVE_CLIENT_ID&currency=USD"></script>
 
 <style>
-
-* {
-  box-sizing: border-box;
-}
-
+* { box-sizing: border-box; }
 body {
   margin: 0;
   background: radial-gradient(circle at top right, #1a0000, #000);
   font-family: 'Segoe UI', sans-serif;
   color: white;
 }
-
-/* HERO SECTION */
 .hero {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 60px 10%;
 }
-
 .hero-text h1 {
   font-size: 70px;
   color: #ff3c3c;
@@ -36,14 +29,12 @@ body {
   margin: 0;
   text-shadow: 0 0 20px red;
 }
-
 .hero-text p {
   margin-top: 20px;
   font-size: 20px;
   max-width: 600px;
   opacity: 0.8;
 }
-
 .countdown {
   margin-top: 25px;
   font-size: 28px;
@@ -53,25 +44,17 @@ body {
   border-radius: 8px;
   border: 1px solid #ff2a2a;
 }
-
-/* 3D BASKETBALL */
 .hero-ball img {
   width: 400px;
   filter: drop-shadow(0 0 40px red);
   animation: float 4s ease-in-out infinite;
 }
-
 @keyframes float {
   0% { transform: translateY(0px) rotate(0deg); }
   50% { transform: translateY(-15px) rotate(8deg); }
   100% { transform: translateY(0px) rotate(0deg); }
 }
-
-/* PANELS */
-.section {
-  padding: 40px 10%;
-}
-
+.section { padding: 40px 10%; }
 .panel {
   background: linear-gradient(145deg, #140000, #000);
   border: 1px solid #ff2a2a;
@@ -80,12 +63,7 @@ body {
   margin-bottom: 30px;
   box-shadow: 0 0 20px rgba(255,0,0,0.2);
 }
-
-.panel h2 {
-  margin-top: 0;
-  color: #ff4c4c;
-}
-
+.panel h2 { margin-top: 0; color: #ff4c4c; }
 input, textarea {
   width: 100%;
   padding: 12px;
@@ -95,7 +73,6 @@ input, textarea {
   color: white;
   border-radius: 5px;
 }
-
 button {
   padding: 12px 20px;
   border: none;
@@ -106,52 +83,35 @@ button {
   border-radius: 6px;
   transition: 0.3s;
 }
-
 button:hover {
   background: #ff5555;
   box-shadow: 0 0 15px red;
 }
-
-.flex {
-  display: flex;
-  gap: 30px;
-}
-
-.flex > div {
-  flex: 1;
-}
-
+.flex { display: flex; gap: 30px; }
+.flex > div { flex: 1; }
 .mission {
   padding: 10px;
   border-bottom: 1px solid #ff2a2a55;
 }
-
-.hidden {
-  display: none;
-}
-
+.hidden { display: none; }
 </style>
 </head>
 
 <body>
 
-<!-- HERO -->
 <div class="hero">
   <div class="hero-text">
     <h1>MISSION BOARD</h1>
     <p>Competitive missions that allow gaming communities to hold disruptive players accountable through verified gameplay challenges.</p>
     <div class="countdown" id="countdown"></div>
   </div>
-
   <div class="hero-ball">
-    <!-- Replace with your basketball image if desired -->
     <img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/Basketball.png">
   </div>
 </div>
 
 <div class="section">
 
-<!-- AUTH -->
 <div class="panel" id="auth">
   <h2>Login or Register</h2>
   <input id="username" placeholder="Username">
@@ -160,7 +120,6 @@ button:hover {
   <button onclick="login()">Login</button>
 </div>
 
-<!-- DASHBOARD -->
 <div id="dashboard" class="hidden">
 
 <div class="flex">
@@ -169,7 +128,10 @@ button:hover {
   <h2>Report Player & Add Bounty</h2>
   <input id="target" placeholder="Player Tag">
   <textarea id="reason" placeholder="Reason"></textarea>
-  <input id="amount" type="number" placeholder="Amount">
+  <input id="amount" type="number" placeholder="Bounty Amount">
+  <p style="color:#ff8888;font-size:14px;">
+    A $2 listing fee is automatically added at checkout.
+  </p>
   <div id="paypal-button-container"></div>
 </div>
 
@@ -179,6 +141,9 @@ button:hover {
   <input id="clip" placeholder="Clip Link">
   <input id="paypalEmail" placeholder="Your PayPal Email">
   <button onclick="submitClaim()">Submit Claim</button>
+  <p style="font-size:13px;color:#ff8888;">
+    Approved claims receive 80% of bounty reward. Platform retains 20% service fee.
+  </p>
 </div>
 
 </div>
@@ -195,7 +160,7 @@ button:hover {
 
 const BASE_URL = "https://bounty-landing-backend.onrender.com";
 
-// COUNTDOWN
+/* COUNTDOWN */
 let end = new Date();
 end.setDate(end.getDate() + 7);
 setInterval(() => {
@@ -205,23 +170,35 @@ setInterval(() => {
   let h = Math.floor(diff / (1000*60*60)) % 24;
   let m = Math.floor(diff / (1000*60)) % 60;
   let s = Math.floor(diff / 1000) % 60;
-  countdown.innerHTML = `${d}d ${h}h ${m}m ${s}s`;
+  document.getElementById("countdown").innerHTML =
+    `${d}d ${h}h ${m}m ${s}s`;
 }, 1000);
 
-// REGISTER
+/* REGISTER */
 async function register() {
-  await fetch(BASE_URL + "/register", {
+
+  const agreed = confirm("Do you agree to the Terms & Conditions?");
+  if (!agreed) return alert("You must agree to continue.");
+
+  const adult = confirm("Are you 18 years or older?");
+  if (!adult) return alert("You must be 18+ to register.");
+
+  let res = await fetch(BASE_URL + "/register", {
     method: "POST",
     headers: {"Content-Type":"application/json"},
     body: JSON.stringify({
       username: username.value,
-      password: password.value
+      password: password.value,
+      agreedTerms: true,
+      isAdult: true
     })
   });
-  alert("Registered!");
+
+  let data = await res.json();
+  alert(data.message || data.error);
 }
 
-// LOGIN
+/* LOGIN */
 async function login() {
   let res = await fetch(BASE_URL + "/login", {
     method: "POST",
@@ -231,44 +208,41 @@ async function login() {
       password: password.value
     })
   });
+
   let data = await res.json();
+
   if (data.token) {
     localStorage.setItem("token", data.token);
-    auth.classList.add("hidden");
-    dashboard.classList.remove("hidden");
+    document.getElementById("auth").classList.add("hidden");
+    document.getElementById("dashboard").classList.remove("hidden");
     loadMissions();
   } else {
     alert("Login failed");
   }
 }
 
-// LOAD MISSIONS
+/* LOAD MISSIONS */
 async function loadMissions() {
   let res = await fetch(BASE_URL + "/missions");
   let data = await res.json();
   missions.innerHTML = "";
+
   data.forEach(m => {
     missions.innerHTML += `
       <div class="mission">
         <strong>ID:</strong> ${m.id} |
         <strong>Player:</strong> ${m.target} |
-        <strong>Reward:</strong> $${m.amount}
+        <strong>Reward:</strong> $${m.bounty_amount}
       </div>
     `;
   });
 }
 
-// CLAIM
+/* CLAIM */
 async function submitClaim() {
-  let token = localStorage.getItem("token");
-  if (!token) return alert("Login required");
-
   await fetch(BASE_URL + "/claims", {
     method: "POST",
-    headers: {
-      "Content-Type":"application/json",
-      "Authorization":"Bearer " + token
-    },
+    headers: {"Content-Type":"application/json"},
     body: JSON.stringify({
       missionId: missionId.value,
       clip: clip.value,
@@ -279,35 +253,37 @@ async function submitClaim() {
   alert("Claim submitted");
 }
 
-// PAYPAL
+/* PAYPAL */
 paypal.Buttons({
-  createOrder: (data, actions) => {
-    return actions.order.create({
-      purchase_units: [{
-        amount: { value: amount.value }
-      }]
-    });
-  },
-  onApprove: async (data, actions) => {
-    await actions.order.capture();
-    let token = localStorage.getItem("token");
 
-    await fetch(BASE_URL + "/missions", {
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json",
-        "Authorization":"Bearer " + token
-      },
-      body:JSON.stringify({
-        target:target.value,
-        reason:reason.value,
-        amount:amount.value
+  createOrder: async () => {
+    const res = await fetch(BASE_URL + "/create-order", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({
+        target: target.value,
+        reason: reason.value,
+        amount: amount.value
       })
     });
 
-    alert("Mission created!");
+    const data = await res.json();
+    return data.id;
+  },
+
+  onApprove: async (data) => {
+    await fetch(BASE_URL + "/capture-order", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({
+        orderId: data.orderID
+      })
+    });
+
+    alert("Mission funded successfully!");
     loadMissions();
   }
+
 }).render("#paypal-button-container");
 
 </script>
