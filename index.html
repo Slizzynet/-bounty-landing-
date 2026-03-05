@@ -5,145 +5,223 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MISSION BOARD</title>
 
-<!-- 🔴 REPLACE WITH YOUR LIVE CLIENT ID -->
-<script src="https://www.paypal.com/sdk/js?client-id=AYJrkUdCunqmHyIzD0fL4vylFWemiJsOggQbZ00__2JgpZ0agkeISjKWL-5dgPTEFPet7DO2gH2aNlrF&currency=USD"></script>
+<!-- PAYPAL SDK -->
+<script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=USD"></script>
 
 <style>
-* { box-sizing: border-box; }
-body {
-  margin: 0;
-  background: radial-gradient(circle at top right, #1a0000, #000);
-  font-family: 'Segoe UI', sans-serif;
-  color: white;
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{
+  background: radial-gradient(circle at top,#1a0000,#000);
+  font-family:Arial,Helvetica,sans-serif;
+  color:white;
 }
-.hero {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 60px 10%;
+
+header{
+  padding:30px;
+  text-align:center;
 }
-.hero-text h1 {
-  font-size: 70px;
-  color: #ff3c3c;
-  letter-spacing: 4px;
-  margin: 0;
-  text-shadow: 0 0 20px red;
+
+header h1{
+  font-size:48px;
+  color:#ff2a2a;
+  text-shadow:0 0 20px red;
+  letter-spacing:3px;
 }
-.hero-text p {
-  margin-top: 20px;
-  font-size: 20px;
-  max-width: 600px;
-  opacity: 0.8;
+
+header p{
+  opacity:.8;
+  margin-top:10px;
 }
-.countdown {
-  margin-top: 25px;
-  font-size: 28px;
-  background: #111;
-  padding: 12px 20px;
-  display: inline-block;
-  border-radius: 8px;
-  border: 1px solid #ff2a2a;
+
+.container{
+  width:95%;
+  max-width:1200px;
+  margin:auto;
+  padding-bottom:60px;
 }
-.hero-ball img {
-  width: 400px;
-  filter: drop-shadow(0 0 40px red);
-  animation: float 4s ease-in-out infinite;
+
+.panel{
+  background:#0f0f0f;
+  border:1px solid #ff2a2a;
+  border-radius:12px;
+  padding:25px;
+  margin-bottom:25px;
+  box-shadow:0 0 25px rgba(255,0,0,.2);
 }
-@keyframes float {
-  0% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-15px) rotate(8deg); }
-  100% { transform: translateY(0px) rotate(0deg); }
+
+.panel h2{
+  margin-bottom:15px;
+  color:#ff3c3c;
 }
-.section { padding: 40px 10%; }
-.panel {
-  background: linear-gradient(145deg, #140000, #000);
-  border: 1px solid #ff2a2a;
-  border-radius: 10px;
-  padding: 25px;
-  margin-bottom: 30px;
-  box-shadow: 0 0 20px rgba(255,0,0,0.2);
+
+input,textarea{
+  width:100%;
+  padding:12px;
+  margin-bottom:12px;
+  background:#000;
+  border:1px solid #ff2a2a;
+  color:white;
+  border-radius:6px;
 }
-.panel h2 { margin-top: 0; color: #ff4c4c; }
-input, textarea {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 12px;
-  background: #000;
-  border: 1px solid #ff2a2a;
-  color: white;
-  border-radius: 5px;
+
+button{
+  padding:12px 20px;
+  background:#ff2a2a;
+  border:none;
+  color:black;
+  font-weight:bold;
+  cursor:pointer;
+  border-radius:6px;
+  transition:.2s;
 }
-button {
-  padding: 12px 20px;
-  border: none;
-  background: #ff2a2a;
-  color: black;
-  font-weight: bold;
-  cursor: pointer;
-  border-radius: 6px;
-  transition: 0.3s;
+
+button:hover{
+  background:#ff5555;
+  box-shadow:0 0 15px red;
 }
-button:hover {
-  background: #ff5555;
-  box-shadow: 0 0 15px red;
+
+.flex{
+  display:flex;
+  gap:20px;
+  flex-wrap:wrap;
 }
-.flex { display: flex; gap: 30px; }
-.flex > div { flex: 1; }
-.mission {
-  padding: 10px;
-  border-bottom: 1px solid #ff2a2a55;
+
+.flex>div{
+  flex:1;
+  min-width:280px;
 }
-.hidden { display: none; }
+
+.mission{
+  padding:12px;
+  border-bottom:1px solid #ff2a2a33;
+}
+
+.mission strong{
+  color:#ff4c4c;
+}
+
+.hidden{display:none}
+
+.legal-section{
+  font-size:14px;
+  margin-top:10px;
+}
+
+.terms-link{
+  color:#ff2a2a;
+  text-decoration:underline;
+  cursor:pointer;
+}
+
+.terms-box{
+  background:#111;
+  border:1px solid #ff2a2a;
+  padding:10px;
+  margin-top:10px;
+  max-height:200px;
+  overflow-y:auto;
+  border-radius:6px;
+}
+
+.error-text{
+  color:red;
+  margin-top:5px;
+}
 </style>
 </head>
 
 <body>
 
-<div class="hero">
-  <div class="hero-text">
-    <h1>MISSION BOARD</h1>
-    <p>Competitive missions that allow gaming communities to hold disruptive players accountable through verified gameplay challenges.</p>
-    <div class="countdown" id="countdown"></div>
-  </div>
-  <div class="hero-ball">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/Basketball.png">
-  </div>
-</div>
+<header>
+  <h1>MISSION BOARD</h1>
+  <p>Competitive accountability platform for verified gameplay challenges.</p>
+</header>
 
-<div class="section">
+<div class="container">
 
+<!-- AUTH -->
 <div class="panel" id="auth">
-  <h2>Login or Register</h2>
+  <h2>Login / Register</h2>
   <input id="username" placeholder="Username">
   <input id="password" type="password" placeholder="Password">
+
   <button onclick="register()">Register</button>
   <button onclick="login()">Login</button>
+
+  <div class="legal-section">
+    <label>
+      <input type="checkbox" id="ageConfirm">
+      I confirm I am 18 years or older
+    </label><br>
+
+    <label>
+      <input type="checkbox" id="termsConfirm">
+      I agree to the <span class="terms-link" onclick="toggleTerms()">Terms & Conditions</span>
+    </label>
+
+    <div id="termsBox" class="terms-box hidden">
+
+      <p><strong>Platform Terms</strong></p>
+
+      <p>
+        By registering you agree to participate in competitive gameplay challenges.
+        All missions are community-driven. No refunds once a mission is live.
+        Approved claims receive 80% of the bounty. The platform retains a 20% service fee.
+      </p>
+
+      <p><strong>$2 Listing Fee</strong><br>
+      A non-refundable $2 listing fee is added to every bounty posted.
+      This fee covers platform operations and visibility placement.
+      </p>
+
+      <p><strong>2.1 Affiliates of Game Publishers and Platforms</strong><br>
+      Any employee, contractor, consultant, agent, representative, officer,
+      director, or affiliate of any video game publisher, developer, studio,
+      platform operator (including Steam, Epic Games Store, or console platforms),
+      anti-cheat provider, or esports organisation — including anyone acting on
+      their behalf or direction — is strictly prohibited from using this platform.
+      This includes affiliates of companies related to games currently or
+      potentially supported on the platform, including but not limited to:
+      Valorant / League of Legends / Riot Games;
+      CS2 / Valve Corporation;
+      Rivals / NetEase Games;
+      Overwatch / Blizzard Entertainment / Activision Blizzard / Microsoft Gaming.
+      </p>
+
+    </div>
+
+    <p id="legalError" class="error-text"></p>
+  </div>
 </div>
 
+<!-- DASHBOARD -->
 <div id="dashboard" class="hidden">
 
 <div class="flex">
 
 <div class="panel">
-  <h2>Report Player & Add Bounty</h2>
-  <input id="target" placeholder="Player Tag">
+  <h2>Post Mission</h2>
+
+  <input id="target" placeholder="Target Player Tag">
   <textarea id="reason" placeholder="Reason"></textarea>
   <input id="amount" type="number" placeholder="Bounty Amount">
-  <p style="color:#ff8888;font-size:14px;">
-    A $2 listing fee is automatically added at checkout.
-  </p>
+
+  <p><strong>Total Charged:</strong> Bounty + $2 Listing Fee</p>
+
   <div id="paypal-button-container"></div>
 </div>
 
 <div class="panel">
-  <h2>Claim Bounty</h2>
+  <h2>Claim Mission</h2>
+
   <input id="missionId" placeholder="Mission ID">
-  <input id="clip" placeholder="Clip Link">
+  <input type="file" id="proofFile" accept="image/*,video/*">
   <input id="paypalEmail" placeholder="Your PayPal Email">
+
+  <p>Approved claims receive 80% of bounty reward.</p>
+
   <button onclick="submitClaim()">Submit Claim</button>
-  <p style="font-size:13px;color:#ff8888;">
-    Approved claims receive 80% of bounty reward. Platform retains 20% service fee.
-  </p>
 </div>
 
 </div>
@@ -154,100 +232,85 @@ button:hover {
 </div>
 
 </div>
+
 </div>
 
 <script>
-
-const BASE_URL = "https://bounty-landing-backend.onrender.com";
-
-/* COUNTDOWN */
-let end = new Date();
-end.setDate(end.getDate() + 7);
-setInterval(() => {
-  let now = new Date();
-  let diff = end - now;
-  let d = Math.floor(diff / (1000*60*60*24));
-  let h = Math.floor(diff / (1000*60*60)) % 24;
-  let m = Math.floor(diff / (1000*60)) % 60;
-  let s = Math.floor(diff / 1000) % 60;
-  document.getElementById("countdown").innerHTML =
-    `${d}d ${h}h ${m}m ${s}s`;
-}, 1000);
+const BASE_URL="https://bounty-landing-backend.onrender.com";
 
 /* REGISTER */
-async function register() {
+async function register(){
+  if(!validateLegal())return;
 
-  const agreed = confirm("Do you agree to the Terms & Conditions?");
-  if (!agreed) return alert("You must agree to continue.");
-
-  const adult = confirm("Are you 18 years or older?");
-  if (!adult) return alert("You must be 18+ to register.");
-
-  let res = await fetch(BASE_URL + "/register", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({
-      username: username.value,
-      password: password.value,
-      agreedTerms: true,
-      isAdult: true
+  let res=await fetch(BASE_URL+"/register",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      username:username.value,
+      password:password.value,
+      agreedTerms:true,
+      isAdult:true
     })
   });
 
-  let data = await res.json();
-  alert(data.message || data.error);
+  let data=await res.json();
+  alert(data.message||data.error);
 }
 
 /* LOGIN */
-async function login() {
-  let res = await fetch(BASE_URL + "/login", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({
-      username: username.value,
-      password: password.value
+async function login(){
+  let res=await fetch(BASE_URL+"/login",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      username:username.value,
+      password:password.value
     })
   });
 
-  let data = await res.json();
-
-  if (data.token) {
-    localStorage.setItem("token", data.token);
-    document.getElementById("auth").classList.add("hidden");
-    document.getElementById("dashboard").classList.remove("hidden");
+  let data=await res.json();
+  if(data.token){
+    localStorage.setItem("token",data.token);
+    auth.classList.add("hidden");
+    dashboard.classList.remove("hidden");
     loadMissions();
-  } else {
+  }else{
     alert("Login failed");
   }
 }
 
 /* LOAD MISSIONS */
-async function loadMissions() {
-  let res = await fetch(BASE_URL + "/missions");
-  let data = await res.json();
-  missions.innerHTML = "";
-
-  data.forEach(m => {
-    missions.innerHTML += `
+async function loadMissions(){
+  let res=await fetch(BASE_URL+"/missions");
+  let data=await res.json();
+  missions.innerHTML="";
+  data.forEach(m=>{
+    missions.innerHTML+=`
       <div class="mission">
         <strong>ID:</strong> ${m.id} |
-        <strong>Player:</strong> ${m.target} |
-        <strong>Reward:</strong> $${m.bounty_amount}
-      </div>
-    `;
+        <strong>Target:</strong> ${m.target} |
+        <strong>Bounty:</strong> $${m.bounty_amount}
+      </div>`;
   });
 }
 
 /* CLAIM */
-async function submitClaim() {
-  await fetch(BASE_URL + "/claims", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({
-      missionId: missionId.value,
-      clip: clip.value,
-      paypal: paypalEmail.value
-    })
+async function submitClaim(){
+  let token=localStorage.getItem("token");
+  if(!token)return alert("Login required");
+
+  const file=document.getElementById("proofFile").files[0];
+  if(!file)return alert("Upload proof.");
+
+  const formData=new FormData();
+  formData.append("missionId",missionId.value);
+  formData.append("paypal",paypalEmail.value);
+  formData.append("file",file);
+
+  await fetch(BASE_URL+"/claims",{
+    method:"POST",
+    headers:{Authorization:"Bearer "+token},
+    body:formData
   });
 
   alert("Claim submitted");
@@ -255,37 +318,47 @@ async function submitClaim() {
 
 /* PAYPAL */
 paypal.Buttons({
-
-  createOrder: async () => {
-    const res = await fetch(BASE_URL + "/create-order", {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({
-        target: target.value,
-        reason: reason.value,
-        amount: amount.value
+  createOrder:async()=>{
+    let res=await fetch(BASE_URL+"/create-order",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        target:target.value,
+        reason:reason.value,
+        amount:amount.value
       })
     });
-
-    const data = await res.json();
-    return data.id;
+    let order=await res.json();
+    return order.id;
   },
-
-  onApprove: async (data) => {
-    await fetch(BASE_URL + "/capture-order", {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({
-        orderId: data.orderID
-      })
+  onApprove:async(data)=>{
+    await fetch(BASE_URL+"/capture-order",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({orderId:data.orderID})
     });
-
-    alert("Mission funded successfully!");
+    alert("Mission posted successfully.");
     loadMissions();
   }
-
 }).render("#paypal-button-container");
 
+/* LEGAL */
+function toggleTerms(){
+  termsBox.classList.toggle("hidden");
+}
+
+function validateLegal(){
+  if(!ageConfirm.checked){
+    legalError.textContent="You must confirm 18+.";
+    return false;
+  }
+  if(!termsConfirm.checked){
+    legalError.textContent="You must agree to Terms.";
+    return false;
+  }
+  legalError.textContent="";
+  return true;
+}
 </script>
 
 </body>
