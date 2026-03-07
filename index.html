@@ -39,7 +39,7 @@ opacity:.8;
 margin-top:10px;
 }
 
-/* LIVE COUNT */
+/* LIVE BAR */
 
 .live-bar{
 text-align:center;
@@ -72,7 +72,7 @@ color:#ff3c3c;
 margin-bottom:15px;
 }
 
-/* AUTH */
+/* INPUTS */
 
 input,textarea,select{
 width:100%;
@@ -144,12 +144,6 @@ opacity:.85;
 margin-bottom:4px;
 }
 
-/* LEADERBOARD */
-
-.leaderboard li{
-margin-bottom:6px;
-}
-
 /* MODAL */
 
 .modal{
@@ -165,16 +159,16 @@ justify-content:center;
 visibility:hidden;
 }
 
+.modal.show{
+visibility:visible;
+}
+
 .modal-content{
 background:#111;
 border:1px solid #ff2a2a55;
 padding:30px;
 border-radius:12px;
-width:400px;
-}
-
-.modal.show{
-visibility:visible;
+width:420px;
 }
 
 /* TERMS */
@@ -198,10 +192,8 @@ font-size:13px;
 <body>
 
 <header>
-
 <h1>MISSION BOARD</h1>
-<p>Competitive bounty challenges for ranked gameplay</p>
-
+<p>Competitive bounty challenges</p>
 </header>
 
 <div class="live-bar">
@@ -222,32 +214,13 @@ font-size:13px;
 <button onclick="register()">Register</button>
 <button onclick="login()">Login</button>
 
-<label>
-<input type="checkbox" id="ageConfirm"> I confirm I am 18+
-</label>
-
-<label>
-<input type="checkbox" id="termsConfirm"> I agree to Terms
-</label>
+<label><input type="checkbox" id="ageConfirm"> I confirm I am 18+</label>
+<label><input type="checkbox" id="termsConfirm"> I agree to Terms</label>
 
 <div class="terms-box">
-
 <strong>Platform Terms</strong>
-
 <p>Approved claims receive 80% of bounty rewards. Platform keeps 20%.</p>
-
 <p>$2 listing fee added to each bounty.</p>
-
-<p>
-<strong>2.1 Affiliates of Game Publishers</strong><br>
-Employees, contractors, or affiliates of publishers,
-developers, anti-cheat providers, or platform operators
-(including Steam, Epic Games Store, Riot Games,
-Valve Corporation, Blizzard Entertainment,
-Activision Blizzard, Microsoft Gaming, NetEase Games)
-are prohibited from using the platform.
-</p>
-
 </div>
 
 </div>
@@ -284,10 +257,10 @@ are prohibited from using the platform.
 <h2>Leaderboards</h2>
 
 <h3>🏆 Top Hunters</h3>
-<ul id="hunterBoard" class="leaderboard"></ul>
+<ul id="hunterBoard"></ul>
 
 <h3>🎯 Most Wanted</h3>
-<ul id="wantedBoard" class="leaderboard"></ul>
+<ul id="wantedBoard"></ul>
 
 </div>
 
@@ -313,20 +286,17 @@ are prohibited from using the platform.
 
 <h2 id="modalTarget"></h2>
 
-<p><strong>Game Mode:</strong> <span id="modalMode"></span></p>
-
-<p><strong>Bounty Pool:</strong> $<span id="modalBounty"></span></p>
-
+<p><strong>Mode:</strong> <span id="modalMode"></span></p>
+<p><strong>Bounty:</strong> $<span id="modalBounty"></span></p>
 <p><strong>Expires:</strong> <span id="modalDays"></span> days</p>
 
 <h3>Objective</h3>
-
 <p>
-• Pressure the target into a losing performance if on your team.<br>
-• Beat the target and secure the win if matched against them.
+• Pressure target into losing performance if on your team<br>
+• Beat the target if matched against them
 </p>
 
-<input type="file" id="proofFile">
+<input type="file" id="proofFile" accept="video/*,image/*">
 
 <input id="paypalEmail" placeholder="PayPal Email">
 
@@ -351,8 +321,9 @@ are prohibited from using the platform.
 const BASE="https://bounty-landing-backend.onrender.com"
 
 let selectedMission=null
+let currentUser=null
 
-/* AUTH */
+/* REGISTER */
 
 async function register(){
 
@@ -377,6 +348,8 @@ alert(data.message||data.error)
 
 }
 
+/* LOGIN */
+
 async function login(){
 
 let res=await fetch(BASE+"/login",{
@@ -392,7 +365,7 @@ let data=await res.json()
 
 if(data.token){
 
-localStorage.setItem("token",data.token)
+currentUser=username.value
 
 auth.classList.add("hidden")
 dashboard.classList.remove("hidden")
@@ -416,19 +389,18 @@ missions.innerHTML=""
 
 data.forEach(m=>{
 
-missions.innerHTML+=`
+let card=document.createElement("div")
+card.className="mission-card"
 
-<div class="mission-card" onclick='openMission(${JSON.stringify(m)})'>
-
+card.innerHTML=`
 <h3>${m.target}</h3>
-
 <p>💰 $${m.bounty_amount}</p>
-
 <p>⏳ ${m.days_remaining} days left</p>
-
-</div>
-
 `
+
+card.onclick=()=>openMission(m)
+
+missions.appendChild(card)
 
 })
 
@@ -450,29 +422,33 @@ missionModal.classList.add("show")
 }
 
 function closeModal(){
-
 missionModal.classList.remove("show")
-
 }
 
-/* CLAIM */
+/* CLAIM SUBMIT */
 
 async function submitClaim(){
+
+if(!proofFile.files[0]){
+alert("Upload video or image proof")
+return
+}
 
 let form=new FormData()
 
 form.append("missionId",selectedMission.id)
 form.append("paypal",paypalEmail.value)
+form.append("hunter",currentUser)
 form.append("file",proofFile.files[0])
 
-await fetch(BASE+"/claims",{
-
+let res=await fetch(BASE+"/claims",{
 method:"POST",
 body:form
-
 })
 
-alert("Claim submitted")
+let data=await res.json()
+
+alert(data.message||data.error)
 
 }
 
@@ -489,10 +465,8 @@ headers:{"Content-Type":"application/json"},
 body:JSON.stringify({
 
 missionId:selectedMission.id,
-
 amount:addAmount.value,
-
-username:username.value
+username:currentUser
 
 })
 
@@ -528,12 +502,11 @@ wantedBoard.innerHTML+=`<li>${p.target} — ${p.hunts}</li>`
 
 }
 
-/* LIVE COUNT */
+/* LIVE PLAYERS */
 
 async function loadLive(){
 
 let res=await fetch(BASE+"/live-count")
-
 let data=await res.json()
 
 liveCount.innerText=data.players
@@ -557,9 +530,7 @@ headers:{"Content-Type":"application/json"},
 body:JSON.stringify({
 
 target:target.value,
-
 reason:mode.value,
-
 amount:amount.value
 
 })
@@ -583,11 +554,8 @@ headers:{"Content-Type":"application/json"},
 body:JSON.stringify({
 
 orderId:data.orderID,
-
 target:target.value,
-
 reason:mode.value,
-
 amount:amount.value
 
 })
