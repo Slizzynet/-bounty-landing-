@@ -34,13 +34,6 @@ color:#ff2a2a;
 text-shadow:0 0 20px red;
 }
 
-header p{
-opacity:.8;
-margin-top:10px;
-}
-
-/* LIVE BAR */
-
 .live-bar{
 text-align:center;
 padding:10px;
@@ -57,8 +50,6 @@ margin:auto;
 padding:30px 0;
 }
 
-/* PANELS */
-
 .panel{
 background:#0e0e0e;
 border:1px solid #ff2a2a33;
@@ -74,7 +65,7 @@ margin-bottom:15px;
 
 /* INPUTS */
 
-input,textarea,select{
+input,select{
 width:100%;
 padding:12px;
 margin-bottom:10px;
@@ -111,7 +102,7 @@ flex:1;
 min-width:280px;
 }
 
-/* MISSION GRID */
+/* MISSIONS */
 
 .missions-grid{
 display:grid;
@@ -125,26 +116,12 @@ border:1px solid #ff2a2a44;
 padding:18px;
 border-radius:10px;
 cursor:pointer;
-transition:.2s;
 }
 
 .mission-card:hover{
 transform:scale(1.03);
 box-shadow:0 0 15px red;
 }
-
-.mission-card h3{
-color:#ff4040;
-margin-bottom:8px;
-}
-
-.mission-card p{
-font-size:14px;
-opacity:.85;
-margin-bottom:4px;
-}
-
-/* MODAL */
 
 .modal{
 position:fixed;
@@ -171,19 +148,6 @@ border-radius:12px;
 width:420px;
 }
 
-/* TERMS */
-
-.terms-box{
-background:#111;
-border:1px solid #ff2a2a;
-padding:10px;
-margin-top:10px;
-max-height:200px;
-overflow-y:auto;
-border-radius:6px;
-font-size:13px;
-}
-
 .hidden{display:none}
 
 </style>
@@ -197,7 +161,7 @@ font-size:13px;
 </header>
 
 <div class="live-bar">
-🔥 LIVE PLAYERS HUNTING: <span id="liveCount">0</span>
+🔥 ACTIVE PLAYERS: <span id="liveCount">0</span>
 </div>
 
 <div class="container">
@@ -209,19 +173,20 @@ font-size:13px;
 <h2>Login / Register</h2>
 
 <input id="username" placeholder="Username">
+
+<input id="email" placeholder="Email">
+
 <input id="password" type="password" placeholder="Password">
+
+<label>
+<input type="checkbox" onclick="togglePassword()"> Show Password
+</label>
 
 <button onclick="register()">Register</button>
 <button onclick="login()">Login</button>
 
 <label><input type="checkbox" id="ageConfirm"> I confirm I am 18+</label>
 <label><input type="checkbox" id="termsConfirm"> I agree to Terms</label>
-
-<div class="terms-box">
-<strong>Platform Terms</strong>
-<p>Approved claims receive 80% of bounty rewards. Platform keeps 20%.</p>
-<p>$2 listing fee added to each bounty.</p>
-</div>
 
 </div>
 
@@ -244,7 +209,7 @@ font-size:13px;
 <option>Park</option>
 </select>
 
-<input id="amount" type="number" placeholder="Bounty Amount">
+<input id="amount" type="number" placeholder="Bounty Amount ($7 minimum)">
 
 <p>Mission expires automatically after 20 days.</p>
 
@@ -290,12 +255,6 @@ font-size:13px;
 <p><strong>Bounty:</strong> $<span id="modalBounty"></span></p>
 <p><strong>Expires:</strong> <span id="modalDays"></span> days</p>
 
-<h3>Objective</h3>
-<p>
-• Pressure target into losing performance if on your team<br>
-• Beat the target if matched against them
-</p>
-
 <input type="file" id="proofFile" accept="video/*,image/*">
 
 <input id="paypalEmail" placeholder="PayPal Email">
@@ -323,12 +282,22 @@ const BASE="https://bounty-landing-backend.onrender.com"
 let selectedMission=null
 let currentUser=null
 
+/* PASSWORD TOGGLE */
+
+function togglePassword(){
+
+let p=document.getElementById("password")
+
+p.type = p.type==="password" ? "text":"password"
+
+}
+
 /* REGISTER */
 
 async function register(){
 
 if(!ageConfirm.checked||!termsConfirm.checked){
-alert("Must confirm 18+ and terms")
+alert("You must confirm 18+ and accept terms")
 return
 }
 
@@ -344,6 +313,7 @@ isAdult:true
 })
 
 let data=await res.json()
+
 alert(data.message||data.error)
 
 }
@@ -390,6 +360,7 @@ missions.innerHTML=""
 data.forEach(m=>{
 
 let card=document.createElement("div")
+
 card.className="mission-card"
 
 card.innerHTML=`
@@ -422,15 +393,17 @@ missionModal.classList.add("show")
 }
 
 function closeModal(){
+
 missionModal.classList.remove("show")
+
 }
 
-/* CLAIM SUBMIT */
+/* CLAIM */
 
 async function submitClaim(){
 
 if(!proofFile.files[0]){
-alert("Upload video or image proof")
+alert("Upload proof")
 return
 }
 
@@ -452,7 +425,7 @@ alert(data.message||data.error)
 
 }
 
-/* BOUNTY POOL */
+/* BOUNTY ADD */
 
 async function addBounty(){
 
@@ -478,35 +451,12 @@ loadMissions()
 
 }
 
-/* LEADERBOARDS */
-
-async function loadLeaderboards(){
-
-let h=await fetch(BASE+"/leaderboard/hunters")
-let hunters=await h.json()
-
-hunterBoard.innerHTML=""
-
-hunters.forEach(p=>{
-hunterBoard.innerHTML+=`<li>${p.hunter} — ${p.wins}</li>`
-})
-
-let w=await fetch(BASE+"/leaderboard/wanted")
-let wanted=await w.json()
-
-wantedBoard.innerHTML=""
-
-wanted.forEach(p=>{
-wantedBoard.innerHTML+=`<li>${p.target} — ${p.hunts}</li>`
-})
-
-}
-
-/* LIVE PLAYERS */
+/* LIVE COUNT */
 
 async function loadLive(){
 
 let res=await fetch(BASE+"/live-count")
+
 let data=await res.json()
 
 liveCount.innerText=data.players
@@ -520,6 +470,11 @@ setInterval(loadLive,5000)
 paypal.Buttons({
 
 createOrder:async()=>{
+
+if(amount.value<7){
+alert("Minimum bounty is $7")
+return
+}
 
 let res=await fetch(BASE+"/create-order",{
 
