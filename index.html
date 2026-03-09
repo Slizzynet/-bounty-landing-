@@ -170,8 +170,6 @@ width:420px;
 
 </header>
 
-<!-- AUTH MODAL -->
-
 <div id="authModal" class="modal show">
 
 <div class="modal-content">
@@ -372,17 +370,7 @@ termsAgree.disabled=false
 })
 
 async function forgotPassword(){
-
-let email=loginEmail.value
-
-await fetch(BASE+"/forgot-password",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({email})
-})
-
-alert("If the account exists a reset email was sent")
-
+alert("Password reset coming soon")
 }
 
 async function register(){
@@ -398,7 +386,9 @@ headers:{"Content-Type":"application/json"},
 body:JSON.stringify({
 email:regEmail.value,
 username:regDisplay.value,
-password:regPassword.value
+password:regPassword.value,
+agreedTerms:true,
+isAdult:true
 })
 })
 
@@ -432,7 +422,6 @@ authModal.classList.remove("show")
 dashboard.classList.remove("hidden")
 
 loadMissions()
-loadLeaderboards()
 loadLive()
 loadUserCount()
 startHeartbeat()
@@ -467,8 +456,6 @@ body:JSON.stringify({username:currentUser})
 },20000)
 
 }
-
-/* MISSIONS */
 
 async function loadMissions(){
 
@@ -572,13 +559,15 @@ liveCount.innerText=data.players
 
 setInterval(loadLive,5000)
 
+/* PAYPAL FIXED */
+
 paypal.Buttons({
 
 createOrder:async()=>{
 
-if(amount.value<7){
+if(Number(amount.value) < 7){
 alert("Minimum bounty is $7")
-return
+throw new Error("Minimum bounty not met")
 }
 
 let res=await fetch(BASE+"/create-order",{
