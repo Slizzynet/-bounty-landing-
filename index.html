@@ -33,10 +33,16 @@ text-shadow:0 0 20px red;
 }
 
 .live-bar{
-text-align:center;
+margin-top:15px;
 padding:10px;
 background:#111;
-border-bottom:1px solid #ff2a2a33;
+border-top:1px solid #ff2a2a33;
+}
+
+#userCorner{
+float:right;
+color:#ff2a2a;
+font-weight:bold;
 }
 
 .container{
@@ -140,29 +146,29 @@ width:420px;
 
 .hidden{display:none}
 
-#userCorner{
-position:fixed;
-top:10px;
-right:20px;
-color:#ff2a2a;
-font-weight:bold;
-}
-
 </style>
 </head>
 
 <body>
 
-<div id="userCorner"></div>
-
 <header>
+
 <h1>MISSION BOARD</h1>
 <p>Competitive bounty challenges</p>
-</header>
 
 <div class="live-bar">
-🔥 ACTIVE PLAYERS: <span id="liveCount">0</span>
+
+👥 Registered Hunters: <span id="userCount">0</span>
+
+&nbsp;&nbsp;|&nbsp;&nbsp;
+
+🟢 Active Now: <span id="liveCount">0</span>
+
+<div id="userCorner"></div>
+
 </div>
+
+</header>
 
 <!-- AUTH MODAL -->
 
@@ -419,7 +425,7 @@ if(data.token){
 
 currentUser=data.username
 
-userCorner.innerText=data.username
+userCorner.innerText="👤 "+data.username
 
 authModal.classList.remove("show")
 
@@ -428,12 +434,37 @@ dashboard.classList.remove("hidden")
 loadMissions()
 loadLeaderboards()
 loadLive()
+loadUserCount()
+startHeartbeat()
 
 }else{
 
 alert(data.error)
 
 }
+
+}
+
+async function loadUserCount(){
+
+let res=await fetch(BASE+"/user-count")
+let data=await res.json()
+
+userCount.innerText=data.total
+
+}
+
+function startHeartbeat(){
+
+setInterval(()=>{
+
+fetch(BASE+"/heartbeat",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({username:currentUser})
+})
+
+},20000)
 
 }
 
