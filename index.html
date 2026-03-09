@@ -3,295 +3,143 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>MISSION BOARD</title>
 
 <script src="https://www.paypal.com/sdk/js?client-id=AYJrkUdCunqmHyIzD0fL4vylFWemiJsOggQbZ00__2JgpZ0agkeISjKWL-5dgPTEFPet7DO2gH2aNlrF&currency=USD"></script>
 
 <style>
-
 *{margin:0;padding:0;box-sizing:border-box}
-
-body{
-background:#070707;
-font-family:Arial,Helvetica,sans-serif;
-color:white;
-}
-
-header{
-text-align:center;
-padding:40px;
-background:linear-gradient(180deg,#1a0000,#000);
-border-bottom:1px solid #ff2a2a55;
-}
-
-header h1{
-font-size:48px;
-letter-spacing:4px;
-color:#ff2a2a;
-text-shadow:0 0 20px red;
-}
-
-.live-bar{
-margin-top:15px;
-padding:10px;
-background:#111;
-border-top:1px solid #ff2a2a33;
-}
-
-#userCorner{
-float:right;
-color:#ff2a2a;
-font-weight:bold;
-}
-
-.container{
-width:95%;
-max-width:1300px;
-margin:auto;
-padding:30px 0;
-}
-
-.panel{
-background:#0e0e0e;
-border:1px solid #ff2a2a33;
-border-radius:12px;
-padding:20px;
-margin-bottom:25px;
-}
-
-.panel h2{
-color:#ff3c3c;
-margin-bottom:15px;
-}
-
-input,select{
-width:100%;
-padding:12px;
-margin-bottom:10px;
-background:#000;
-border:1px solid #ff2a2a55;
-border-radius:6px;
-color:white;
-}
-
-button{
-padding:10px 16px;
-background:#ff2a2a;
-border:none;
-border-radius:6px;
-font-weight:bold;
-cursor:pointer;
-}
-
-button:hover{
-background:#ff4a4a;
-box-shadow:0 0 10px red;
-}
-
-.flex{
-display:flex;
-gap:20px;
-flex-wrap:wrap;
-}
-
-.flex>div{
-flex:1;
-min-width:280px;
-}
-
-.missions-grid{
-display:grid;
-grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
-gap:20px;
-}
-
-.mission-card{
-background:#111;
-border:1px solid #ff2a2a44;
-padding:18px;
-border-radius:10px;
-cursor:pointer;
-}
-
-.mission-card:hover{
-transform:scale(1.03);
-box-shadow:0 0 15px red;
-}
-
-.modal{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:rgba(0,0,0,.85);
-display:flex;
-align-items:center;
-justify-content:center;
-visibility:hidden;
-}
-
-.modal.show{
-visibility:visible;
-}
-
-.modal-content{
-background:#111;
-border:1px solid #ff2a2a55;
-padding:30px;
-border-radius:12px;
-width:420px;
-height:400px;
-overflow-y:auto;
-}
-
-.hidden{display:none}
-
+body{background:#070707;font-family:Arial,Helvetica,sans-serif;color:white;}
+header{text-align:center;padding:40px;background:linear-gradient(180deg,#1a0000,#000);border-bottom:1px solid #ff2a2a55;}
+header h1{font-size:48px;letter-spacing:4px;color:#ff2a2a;text-shadow:0 0 20px red;}
+.live-bar{margin-top:15px;padding:10px;background:#111;border-top:1px solid #ff2a2a33;}
+#userCorner{float:right;color:#ff2a2a;font-weight:bold;}
+.container{width:95%;max-width:1300px;margin:auto;padding:30px 0;}
+.panel{background:#0e0e0e;border:1px solid #ff2a2a33;border-radius:12px;padding:20px;margin-bottom:25px;}
+.panel h2{color:#ff3c3c;margin-bottom:15px;}
+input,select{width:100%;padding:12px;margin-bottom:10px;background:#000;border:1px solid #ff2a2a55;border-radius:6px;color:white;}
+button{padding:10px 16px;background:#ff2a2a;border:none;border-radius:6px;font-weight:bold;cursor:pointer;}
+button:hover{background:#ff4a4a;box-shadow:0 0 10px red;}
+.flex{display:flex;gap:20px;flex-wrap:wrap;}
+.flex>div{flex:1;min-width:280px;}
+.missions-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;}
+.mission-card{background:#111;border:1px solid #ff2a2a44;padding:18px;border-radius:10px;cursor:pointer;}
+.mission-card:hover{transform:scale(1.03);box-shadow:0 0 15px red;}
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;visibility:hidden;}
+.modal.show{visibility:visible;}
+.modal-content{background:#111;border:1px solid #ff2a2a55;padding:30px;border-radius:12px;width:420px;height:400px;overflow-y:auto;}
+.hidden{display:none;}
 </style>
 </head>
 
 <body>
-
 <header>
-
 <h1>MISSION BOARD</h1>
 <p>Competitive bounty challenges</p>
-
 <div class="live-bar">
-
 👥 Registered Hunters: <span id="userCount">0</span>
-
 &nbsp;&nbsp;|&nbsp;&nbsp;
-
 🟢 Active Now: <span id="liveCount">0</span>
-
 <div id="userCorner"></div>
-
 </div>
-
 </header>
 
 <div id="authModal" class="modal show">
-
 <div class="modal-content">
 
 <div id="authChoice">
-
 <h2>Welcome</h2>
-
 <button onclick="showLogin()">Login</button>
 <button onclick="showRegister()">Register</button>
-
 </div>
 
 <div id="loginForm" class="hidden">
-
 <h2>Login</h2>
-
 <input id="loginEmail" placeholder="Email">
-
 <div style="position:relative">
-
 <input id="loginPassword" type="password" placeholder="Password">
-
 <span onclick="toggleLoginPassword()" style="position:absolute;right:10px;top:10px;cursor:pointer">👁</span>
-
 </div>
-
 <button onclick="login()">Login</button>
-
 <p style="cursor:pointer;color:#ff4a4a" onclick="forgotPassword()">Forgot Password?</p>
-
 <button onclick="backChoice()">Back</button>
-
 </div>
 
 <div id="registerForm" class="hidden">
-
 <h2>Register</h2>
-
 <input id="regDisplay" placeholder="Display Name">
-
 <input id="regEmail" placeholder="Email">
-
 <div style="position:relative">
-
 <input id="regPassword" type="password" placeholder="Password">
-
 <span onclick="toggleRegisterPassword()" style="position:absolute;right:10px;top:10px;cursor:pointer">👁</span>
-
 </div>
 
-<!-- TERMS & PRIVACY POLICY -->
-<div style="height:300px;overflow:auto;border:1px solid #333;padding:10px;margin-top:10px" id="termsBox">
-
+<!-- TERMS & PRIVACY POLICY SCROLL BOX -->
+<div style="height:300px;overflow:auto;border:1px solid #333;padding:10px;margin-top:10px;position:relative" id="termsBox">
+<!-- FULL TERMS & PRIVACY -->
 <h3>Terms & Conditions</h3>
-
 <p>Effective Date: March 9, 2026</p>
-
-<p>By registering, accessing, or using the Mission Board platform (“Platform”), you agree to these Terms & Conditions. If you do not agree, you may not use the Platform.</p>
-
+<p>By registering, accessing, or using the Mission Board platform (“Platform”), you agree to these Terms & Conditions (“Terms”). If you do not agree, you may not use the Platform.</p>
 <h4>1. Eligibility and Geographic Restrictions</h4>
 <p>Users must be 18+ and reside in the United States. Employees or affiliates of any game developer, publisher, or related company (e.g., 2K, EA, Activision) are strictly prohibited. Only genuine players of supported games may register.</p>
-
 <h4>2. Account Responsibility</h4>
 <p>Users are solely responsible for all activity on their account. Protect login credentials and notify the Platform of unauthorized access. Misrepresentation or circumvention of eligibility rules is prohibited.</p>
-
 <h4>3. Mission Posting Rules</h4>
 <p>Missions must comply with legal, ethical, and Platform guidelines. Offensive, illegal, or infringing content is prohibited. Missions must be funded through PayPal. The Platform may reject, suspend, or remove missions at its discretion.</p>
-
 <h4>4. Proof Submission and Cheating</h4>
 <p>Users must provide authentic proof. Cheating, collusion, exploiting bugs, or manipulating outcomes is strictly prohibited. Violations may result in forfeiture of rewards, account suspension, or permanent ban. All submissions grant the Platform a worldwide, royalty-free, non-exclusive license to use content.</p>
-
 <h4>5. Payments and No Refunds</h4>
 <p>All payments are processed via PayPal. Missions are funded only after PayPal confirmation. <strong>All payments are final, no refunds.</strong> The Platform is not liable for PayPal processing errors or account issues.</p>
-
 <h4>6. Dispute Resolution</h4>
 <p>All disputes must be submitted through the Platform. The Platform has full discretion in resolving disputes. Users agree to binding arbitration and waive rights to class-action lawsuits where enforceable.</p>
-
 <h4>7. Platform Protection and Anti-Fraud</h4>
 <p>Attempting to bypass controls or exploit the system is prohibited. Fraud, collusion, or abuse may result in account suspension, permanent ban, or legal action. Intentionally losing or manipulating outcomes is forbidden.</p>
-
 <h4>8. Payout Policy</h4>
 <p>Payouts are issued only after Platform verification. The Platform is not liable for lost payouts due to misconduct, technical issues, or PayPal disputes. All payouts are final.</p>
-
 <h4>9. Content Ownership</h4>
 <p>Users retain ownership of uploaded content. Uploads grant the Platform a non-exclusive, worldwide license for operational and promotional use. Third-party content requires authorization.</p>
-
 <h4>10. Liability Limitations</h4>
 <p>The Platform is provided “as is.” Not responsible for direct, indirect, incidental, or consequential damages. Users assume all risk.</p>
-
 <h4>11. Right to Remove Content or Accounts</h4>
 <p>The Platform may remove missions, submissions, or terminate accounts for violations or legal compliance. Users have no claim against such removals.</p>
-
 <h4>12. Governing Law</h4>
 <p>These Terms are governed by the laws of the United States. Users submit to exclusive jurisdiction of U.S. courts or binding arbitration.</p>
-
 <h4>13. Amendments</h4>
 <p>The Platform may update these Terms at any time. Continued use constitutes acceptance.</p>
-
 <h4>14. Contact</h4>
 <p>For questions regarding Terms or Privacy, contact: <strong>help.mboard@gmail.com</strong></p>
 
 <h4>Privacy Policy</h4>
-<p>We collect account info, mission/proof activity, and device usage. All payments are via PayPal; we do not store credentials. Information is used to operate the Platform, verify eligibility, process payments, and prevent fraud. We do not sell your data. Users may request deletion or correction via <strong>help.mboard@gmail.com</strong>. Data is retained while your account exists. Users acknowledge that display names and proof submissions may be publicly visible. Updates constitute acceptance.</p>
+<p>We collect account info, mission/proof activity, and device usage. Payments via PayPal; we do not store credentials. Information is used to operate the Platform, verify eligibility, process payments, and prevent fraud. Users may request deletion or correction via <strong>help.mboard@gmail.com</strong>. Data is retained while your account exists. Users acknowledge that display names and proof submissions may be publicly visible. Updates constitute acceptance.</p>
 
-</div>
-
+<!-- CHECKBOX INSIDE THE SCROLL BOX -->
+<div style="position:absolute;bottom:10px;left:10px;width:calc(100% - 20px);background:#111;padding:5px;border-top:1px solid #333;">
 <label>
-<input type="checkbox" id="termsAgree" disabled>
-I agree to Terms & Privacy
+<input type="checkbox" id="termsAgree" disabled> I agree to Terms & Privacy
 </label>
+</div>
+</div>
 
-<button onclick="register()">Register</button>
-
+<button id="registerBtn" onclick="register()" disabled>Register</button>
 <button onclick="backChoice()">Back</button>
-
 </div>
 
-</div>
+<!-- REST OF FRONTEND CODE (dashboard, modals, missions, PayPal) remains unchanged -->
+<script>
+// Enable checkbox only when scroll reaches bottom
+const termsBox = document.getElementById("termsBox");
+const termsAgree = document.getElementById("termsAgree");
+const registerBtn = document.getElementById("registerBtn");
 
-</div>
+termsBox.addEventListener("scroll", function() {
+    if (termsBox.scrollTop + termsBox.clientHeight >= termsBox.scrollHeight - 5) {
+        termsAgree.disabled = false;
+    }
+});
 
-<!-- ...rest of your container, dashboard, modals, and scripts remain unchanged... -->
+termsAgree.addEventListener("change", function() {
+    registerBtn.disabled = !termsAgree.checked;
+});
+</script>
+</body>
+</html>
