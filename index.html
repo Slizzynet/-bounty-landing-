@@ -18,8 +18,6 @@ font-family:Arial,Helvetica,sans-serif;
 color:white;
 }
 
-/* HEADER */
-
 header{
 text-align:center;
 padding:40px;
@@ -41,8 +39,6 @@ background:#111;
 border-bottom:1px solid #ff2a2a33;
 }
 
-/* CONTAINER */
-
 .container{
 width:95%;
 max-width:1300px;
@@ -62,8 +58,6 @@ margin-bottom:25px;
 color:#ff3c3c;
 margin-bottom:15px;
 }
-
-/* INPUTS */
 
 input,select{
 width:100%;
@@ -89,8 +83,6 @@ background:#ff4a4a;
 box-shadow:0 0 10px red;
 }
 
-/* FLEX */
-
 .flex{
 display:flex;
 gap:20px;
@@ -101,8 +93,6 @@ flex-wrap:wrap;
 flex:1;
 min-width:280px;
 }
-
-/* MISSIONS */
 
 .missions-grid{
 display:grid;
@@ -129,7 +119,7 @@ top:0;
 left:0;
 width:100%;
 height:100%;
-background:rgba(0,0,0,.8);
+background:rgba(0,0,0,.85);
 display:flex;
 align-items:center;
 justify-content:center;
@@ -150,10 +140,20 @@ width:420px;
 
 .hidden{display:none}
 
+#userCorner{
+position:fixed;
+top:10px;
+right:20px;
+color:#ff2a2a;
+font-weight:bold;
+}
+
 </style>
 </head>
 
 <body>
+
+<div id="userCorner"></div>
 
 <header>
 <h1>MISSION BOARD</h1>
@@ -164,33 +164,84 @@ width:420px;
 🔥 ACTIVE PLAYERS: <span id="liveCount">0</span>
 </div>
 
-<div class="container">
+<!-- AUTH MODAL -->
 
-<!-- AUTH -->
+<div id="authModal" class="modal show">
 
-<div id="auth" class="panel">
+<div class="modal-content">
 
-<h2>Login / Register</h2>
+<div id="authChoice">
 
-<input id="username" placeholder="Username">
+<h2>Welcome</h2>
 
-<input id="email" placeholder="Email">
-
-<input id="password" type="password" placeholder="Password">
-
-<label>
-<input type="checkbox" onclick="togglePassword()"> Show Password
-</label>
-
-<button onclick="register()">Register</button>
-<button onclick="login()">Login</button>
-
-<label><input type="checkbox" id="ageConfirm"> I confirm I am 18+</label>
-<label><input type="checkbox" id="termsConfirm"> I agree to Terms</label>
+<button onclick="showLogin()">Login</button>
+<button onclick="showRegister()">Register</button>
 
 </div>
 
-<!-- DASHBOARD -->
+<div id="loginForm" class="hidden">
+
+<h2>Login</h2>
+
+<input id="loginEmail" placeholder="Email">
+
+<div style="position:relative">
+
+<input id="loginPassword" type="password" placeholder="Password">
+
+<span onclick="toggleLoginPassword()" style="position:absolute;right:10px;top:10px;cursor:pointer">👁</span>
+
+</div>
+
+<button onclick="login()">Login</button>
+
+<p style="cursor:pointer;color:#ff4a4a" onclick="forgotPassword()">Forgot Password?</p>
+
+<button onclick="backChoice()">Back</button>
+
+</div>
+
+<div id="registerForm" class="hidden">
+
+<h2>Register</h2>
+
+<input id="regDisplay" placeholder="Display Name">
+
+<input id="regEmail" placeholder="Email">
+
+<div style="position:relative">
+
+<input id="regPassword" type="password" placeholder="Password">
+
+<span onclick="toggleRegisterPassword()" style="position:absolute;right:10px;top:10px;cursor:pointer">👁</span>
+
+</div>
+
+<div style="height:120px;overflow:auto;border:1px solid #333;padding:10px;margin-top:10px" id="termsBox">
+
+<p>Terms and Services</p>
+<p>Scroll to bottom to enable agreement.</p>
+<br><br><br><br><br><br><br><br>
+<p>End of Terms</p>
+
+</div>
+
+<label>
+<input type="checkbox" id="termsAgree" disabled>
+I agree to Terms
+</label>
+
+<button onclick="register()">Register</button>
+
+<button onclick="backChoice()">Back</button>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="container">
 
 <div id="dashboard" class="hidden">
 
@@ -243,8 +294,6 @@ width:420px;
 
 </div>
 
-<!-- MODAL -->
-
 <div id="missionModal" class="modal">
 
 <div class="modal-content">
@@ -282,22 +331,58 @@ const BASE="https://bounty-landing-backend.onrender.com"
 let selectedMission=null
 let currentUser=null
 
-/* PASSWORD TOGGLE */
+function showLogin(){
+authChoice.classList.add("hidden")
+loginForm.classList.remove("hidden")
+}
 
-function togglePassword(){
+function showRegister(){
+authChoice.classList.add("hidden")
+registerForm.classList.remove("hidden")
+}
 
-let p=document.getElementById("password")
+function backChoice(){
+loginForm.classList.add("hidden")
+registerForm.classList.add("hidden")
+authChoice.classList.remove("hidden")
+}
 
-p.type = p.type==="password" ? "text":"password"
+function toggleLoginPassword(){
+let p=document.getElementById("loginPassword")
+p.type=p.type==="password"?"text":"password"
+}
+
+function toggleRegisterPassword(){
+let p=document.getElementById("regPassword")
+p.type=p.type==="password"?"text":"password"
+}
+
+document.addEventListener("DOMContentLoaded",()=>{
+termsBox.addEventListener("scroll",function(){
+if(this.scrollTop + this.clientHeight >= this.scrollHeight){
+termsAgree.disabled=false
+}
+})
+})
+
+async function forgotPassword(){
+
+let email=loginEmail.value
+
+await fetch(BASE+"/forgot-password",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({email})
+})
+
+alert("If the account exists a reset email was sent")
 
 }
 
-/* REGISTER */
-
 async function register(){
 
-if(!ageConfirm.checked||!termsConfirm.checked){
-alert("You must confirm 18+ and accept terms")
+if(!termsAgree.checked){
+alert("You must agree to terms")
 return
 }
 
@@ -305,10 +390,9 @@ let res=await fetch(BASE+"/register",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({
-username:username.value,
-password:password.value,
-agreedTerms:true,
-isAdult:true
+email:regEmail.value,
+username:regDisplay.value,
+password:regPassword.value
 })
 })
 
@@ -318,16 +402,14 @@ alert(data.message||data.error)
 
 }
 
-/* LOGIN */
-
 async function login(){
 
 let res=await fetch(BASE+"/login",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({
-username:username.value,
-password:password.value
+email:loginEmail.value,
+password:loginPassword.value
 })
 })
 
@@ -335,14 +417,21 @@ let data=await res.json()
 
 if(data.token){
 
-currentUser=username.value
+currentUser=data.username
 
-auth.classList.add("hidden")
+userCorner.innerText=data.username
+
+authModal.classList.remove("show")
+
 dashboard.classList.remove("hidden")
 
 loadMissions()
 loadLeaderboards()
 loadLive()
+
+}else{
+
+alert(data.error)
 
 }
 
@@ -377,8 +466,6 @@ missions.appendChild(card)
 
 }
 
-/* MODAL */
-
 function openMission(m){
 
 selectedMission=m
@@ -393,12 +480,8 @@ missionModal.classList.add("show")
 }
 
 function closeModal(){
-
 missionModal.classList.remove("show")
-
 }
-
-/* CLAIM */
 
 async function submitClaim(){
 
@@ -414,18 +497,13 @@ form.append("paypal",paypalEmail.value)
 form.append("hunter",currentUser)
 form.append("file",proofFile.files[0])
 
-let res=await fetch(BASE+"/claims",{
-method:"POST",
-body:form
-})
+let res=await fetch(BASE+"/claims",{method:"POST",body:form})
 
 let data=await res.json()
 
 alert(data.message||data.error)
 
 }
-
-/* BOUNTY ADD */
 
 async function addBounty(){
 
@@ -451,8 +529,6 @@ loadMissions()
 
 }
 
-/* LIVE COUNT */
-
 async function loadLive(){
 
 let res=await fetch(BASE+"/live-count")
@@ -464,8 +540,6 @@ liveCount.innerText=data.players
 }
 
 setInterval(loadLive,5000)
-
-/* PAYPAL */
 
 paypal.Buttons({
 
