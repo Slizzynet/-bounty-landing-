@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>MISSION BOARD</title>
 
 <script src="https://www.paypal.com/sdk/js?client-id=AYJrkUdCunqmHyIzD0fL4vylFWemiJsOggQbZ00__2JgpZ0agkeISjKWL-5dgPTEFPet7DO2gH2aNlrF&currency=USD"></script>
@@ -32,16 +31,13 @@ button:hover{background:#ff4a4a;box-shadow:0 0 10px red;}
 .hidden{display:none;}
 </style>
 </head>
-
 <body>
 
 <header>
 <h1>MISSION BOARD</h1>
 <p>Competitive bounty challenges</p>
 <div class="live-bar">
-👥 Registered Hunters: <span id="userCount">0</span>
-&nbsp;&nbsp;|&nbsp;&nbsp;
-🟢 Active Now: <span id="liveCount">0</span>
+👥 Registered Hunters: <span id="userCount">0</span> &nbsp;&nbsp;|&nbsp;&nbsp; 🟢 Active Now: <span id="liveCount">0</span>
 <div id="userCorner"></div>
 </div>
 </header>
@@ -114,7 +110,7 @@ button:hover{background:#ff4a4a;box-shadow:0 0 10px red;}
 <p>We collect account info, mission/proof activity, and device usage. Payments via PayPal; we do not store credentials. Information is used to operate the Platform, verify eligibility, process payments, and prevent fraud. Users may request deletion or correction via <strong>help.mboard@gmail.com</strong>. Data is retained while your account exists. Users acknowledge that display names and proof submissions may be publicly visible. Updates constitute acceptance.</p>
 </div>
 
-<!-- Checkbox and Register button -->
+<!-- Checkbox + Register button -->
 <label style="display:block;margin-top:10px;">
 <input type="checkbox" id="termsAgree" disabled> I agree to Terms & Privacy
 </label>
@@ -125,24 +121,29 @@ button:hover{background:#ff4a4a;box-shadow:0 0 10px red;}
 </div>
 
 <div class="container">
-<!-- DASHBOARD, PAYPAL, MODALS, LEADERBOARDS, MISSIONS remain unchanged from your original frontend -->
+<!-- DASHBOARD, PAYPAL, MODALS, LEADERBOARDS, MISSIONS remain exactly as before -->
 </div>
 
 <script>
-// Enable checkbox + Register button
-const termsBox = document.getElementById("termsBox");
-const termsAgree = document.getElementById("termsAgree");
-const registerBtn = document.getElementById("registerBtn");
+// DOM references for modal controls
+const authChoice = document.getElementById("authChoice")
+const loginForm = document.getElementById("loginForm")
+const registerForm = document.getElementById("registerForm")
+
+// Enable checkbox + Register button logic
+const termsBox = document.getElementById("termsBox")
+const termsAgree = document.getElementById("termsAgree")
+const registerBtn = document.getElementById("registerBtn")
 
 termsBox.addEventListener("scroll", function() {
     if (termsBox.scrollTop + termsBox.clientHeight >= termsBox.scrollHeight - 5) {
-        termsAgree.disabled = false;
+        termsAgree.disabled = false
     }
-});
+})
 
 termsAgree.addEventListener("change", function() {
-    registerBtn.disabled = !termsAgree.checked;
-});
+    registerBtn.disabled = !termsAgree.checked
+})
 </script>
 
 </body>
