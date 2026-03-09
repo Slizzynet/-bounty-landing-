@@ -424,6 +424,7 @@ dashboard.classList.remove("hidden")
 loadMissions()
 loadLive()
 loadUserCount()
+loadLeaderboards()
 startHeartbeat()
 
 }else{
@@ -431,6 +432,32 @@ startHeartbeat()
 alert(data.error)
 
 }
+
+}
+
+async function loadLeaderboards(){
+
+let hunters = await fetch(BASE+"/leaderboard/hunters")
+let huntersData = await hunters.json()
+
+hunterBoard.innerHTML=""
+
+huntersData.forEach(h=>{
+let li=document.createElement("li")
+li.innerText = h.hunter+" - "+h.wins+" wins"
+hunterBoard.appendChild(li)
+})
+
+let wanted = await fetch(BASE+"/leaderboard/wanted")
+let wantedData = await wanted.json()
+
+wantedBoard.innerHTML=""
+
+wantedData.forEach(w=>{
+let li=document.createElement("li")
+li.innerText = w.target+" - "+w.hunts+" hunts"
+wantedBoard.appendChild(li)
+})
 
 }
 
@@ -525,25 +552,50 @@ alert(data.message||data.error)
 
 async function addBounty(){
 
-await fetch(BASE+"/add-bounty",{
+if(Number(addAmount.value) <= 0){
+alert("Enter a valid amount")
+return
+}
 
+paypal.Buttons({
+
+createOrder: async()=>{
+
+let res = await fetch(BASE+"/create-order",{
 method:"POST",
-
 headers:{"Content-Type":"application/json"},
-
 body:JSON.stringify({
+target:selectedMission.target,
+reason:"Bounty Increase",
+amount:addAmount.value
+})
+})
 
+let order = await res.json()
+return order.id
+
+},
+
+onApprove: async(data)=>{
+
+await fetch(BASE+"/add-bounty",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+orderId:data.orderID,
 missionId:selectedMission.id,
 amount:addAmount.value,
 username:currentUser
-
 })
-
 })
 
 alert("Bounty increased")
 
 loadMissions()
+
+}
+
+}).render("#paypal-button-container")
 
 }
 
@@ -558,8 +610,6 @@ liveCount.innerText=data.players
 }
 
 setInterval(loadLive,5000)
-
-/* PAYPAL FIXED */
 
 paypal.Buttons({
 
