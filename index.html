@@ -164,8 +164,6 @@ font-weight:bold;
 🔥 ACTIVE PLAYERS: <span id="liveCount">0</span>
 </div>
 
-<!-- AUTH MODAL -->
-
 <div id="authModal" class="modal show">
 
 <div class="modal-content">
@@ -392,7 +390,9 @@ headers:{"Content-Type":"application/json"},
 body:JSON.stringify({
 email:regEmail.value,
 username:regDisplay.value,
-password:regPassword.value
+password:regPassword.value,
+agreedTerms:true,
+isAdult:true
 })
 })
 
@@ -437,8 +437,6 @@ alert(data.error)
 
 }
 
-/* MISSIONS */
-
 async function loadMissions(){
 
 let res=await fetch(BASE+"/missions")
@@ -471,7 +469,7 @@ function openMission(m){
 selectedMission=m
 
 modalTarget.innerText=m.target
-modalMode.innerText=m.reason
+modalMode.innerText=m.reason || m.mode
 modalBounty.innerText=m.bounty_amount
 modalDays.innerText=m.days_remaining
 
@@ -535,7 +533,7 @@ let res=await fetch(BASE+"/live-count")
 
 let data=await res.json()
 
-liveCount.innerText=data.players
+liveCount.innerText=data.players || data.live || 0
 
 }
 
@@ -545,9 +543,9 @@ paypal.Buttons({
 
 createOrder:async()=>{
 
-if(amount.value<7){
+if(amount.value < 7){
 alert("Minimum bounty is $7")
-return
+return false
 }
 
 let res=await fetch(BASE+"/create-order",{
