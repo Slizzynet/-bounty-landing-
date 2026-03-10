@@ -31,20 +31,16 @@ text-shadow:0 0 20px red;
 }
 
 .live-bar{
-display:flex;
-justify-content:space-between;
-align-items:center;
 margin-top:15px;
-padding:10px 20px;
+padding:10px;
 background:#111;
 border-top:1px solid #ff2a2a33;
-font-size:14px;
 }
 
 #userCorner{
+float:right;
 color:#ff2a2a;
 font-weight:bold;
-text-shadow:0 0 6px red;
 }
 
 .container{
@@ -77,8 +73,6 @@ border-radius:6px;
 color:white;
 }
 
-/* BUTTON GLOW */
-
 button{
 padding:10px 16px;
 background:#ff2a2a;
@@ -86,16 +80,11 @@ border:none;
 border-radius:6px;
 font-weight:bold;
 cursor:pointer;
-transition:all .25s ease;
 }
 
 button:hover{
 background:#ff4a4a;
-box-shadow:
-0 0 10px #ff2a2a,
-0 0 20px #ff2a2a,
-0 0 30px #ff2a2a;
-transform:translateY(-2px);
+box-shadow:0 0 10px red;
 }
 
 .flex{
@@ -115,37 +104,17 @@ grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
 gap:20px;
 }
 
-/* MISSION CARD ANIMATION */
-
 .mission-card{
 background:#111;
 border:1px solid #ff2a2a44;
 padding:18px;
 border-radius:10px;
 cursor:pointer;
-transition:all .25s ease;
 }
 
 .mission-card:hover{
-transform:translateY(-6px) scale(1.03);
-box-shadow:
-0 0 15px #ff2a2a,
-0 0 25px #ff2a2a;
-animation:pulseGlow 1.5s infinite alternate;
-}
-
-@keyframes pulseGlow{
-
-from{
-box-shadow:0 0 10px #ff2a2a;
-}
-
-to{
-box-shadow:
-0 0 20px #ff2a2a,
-0 0 40px #ff2a2a;
-}
-
+transform:scale(1.03);
+box-shadow:0 0 15px red;
 }
 
 .modal{
@@ -174,10 +143,6 @@ width:420px;
 height:400px;
 overflow-y:auto;
 }
-
-.hidden{
-display:none;
-}
 </style>
 </head>
 
@@ -204,7 +169,7 @@ display:none;
 
 <div class="container">
 
-<div id="dashboard" class="hidden">
+<div id="dashboard">
 
 <div class="flex">
 
@@ -290,28 +255,7 @@ display:none;
 const BASE="https://bounty-landing-backend.onrender.com"
 
 let selectedMission=null
-let currentUser=null
-
-/* COUNTER ANIMATION */
-
-function animateCounter(el,start,end,duration){
-
-let range=end-start
-let stepTime=Math.abs(Math.floor(duration/range))
-let current=start
-
-let timer=setInterval(()=>{
-
-current++
-el.innerText=current
-
-if(current>=end){
-clearInterval(timer)
-}
-
-},stepTime)
-
-}
+let currentUser="guest"
 
 /* LOAD MISSIONS */
 
@@ -321,13 +265,11 @@ let res=await fetch(BASE+"/missions")
 let data=await res.json()
 
 let container=document.getElementById("missions")
-
 container.innerHTML=""
 
 data.forEach(m=>{
 
 let card=document.createElement("div")
-
 card.className="mission-card"
 
 card.innerHTML=`
@@ -344,33 +286,7 @@ container.appendChild(card)
 
 }
 
-/* LIVE COUNTER */
-
-async function loadLive(){
-
-let res=await fetch(BASE+"/live-count")
-let data=await res.json()
-
-let current=parseInt(document.getElementById("liveCount").innerText)||0
-
-animateCounter(document.getElementById("liveCount"),current,data.players,400)
-
-}
-
-/* USER COUNT */
-
-async function loadUserCount(){
-
-let res=await fetch(BASE+"/user-count")
-let data=await res.json()
-
-let current=parseInt(document.getElementById("userCount").innerText)||0
-
-animateCounter(document.getElementById("userCount"),current,data.total,600)
-
-}
-
-/* MISSION MODAL */
+/* OPEN MODAL */
 
 function openMission(m){
 
@@ -385,27 +301,60 @@ document.getElementById("missionModal").classList.add("show")
 
 }
 
+/* CLOSE MODAL */
+
 function closeModal(){
 document.getElementById("missionModal").classList.remove("show")
 }
 
-/* USER DISPLAY */
+/* USER COUNT */
 
-function setUser(username){
-currentUser=username
-document.getElementById("userCorner").innerText=username+" 🔴"
+async function loadUserCount(){
+
+let res=await fetch(BASE+"/user-count")
+let data=await res.json()
+
+document.getElementById("userCount").innerText=data.total
+
 }
 
-/* AUTO LOAD */
+/* LIVE USERS */
+
+async function loadLiveUsers(){
+
+let res=await fetch(BASE+"/live-count")
+let data=await res.json()
+
+document.getElementById("liveCount").innerText=data.players
+
+}
+
+/* HEARTBEAT */
+
+async function heartbeat(){
+
+await fetch(BASE+"/heartbeat",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({username:currentUser})
+})
+
+}
+
+/* PAGE LOAD */
+
+window.onload=()=>{
 
 loadMissions()
-loadLive()
 loadUserCount()
+loadLiveUsers()
 
-setInterval(loadLive,5000)
+setInterval(loadLiveUsers,10000)
+setInterval(heartbeat,30000)
+
+}
 
 </script>
 
 </body>
 </html>
-
