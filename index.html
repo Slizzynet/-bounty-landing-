@@ -184,16 +184,11 @@ font-weight:bold;
 <input id="loginEmail" placeholder="Email">
 
 <div style="position:relative">
-
 <input id="loginPassword" type="password" placeholder="Password">
-
 <span onclick="toggleLoginPassword()" style="position:absolute;right:10px;top:10px;cursor:pointer">👁</span>
-
 </div>
 
 <button onclick="login()">Login</button>
-
-<p style="cursor:pointer;color:#ff4a4a" onclick="forgotPassword()">Forgot Password?</p>
 
 <button onclick="backChoice()">Back</button>
 
@@ -204,121 +199,41 @@ font-weight:bold;
 <h2>Register</h2>
 
 <input id="regDisplay" placeholder="Display Name">
-
 <input id="regEmail" placeholder="Email">
 
 <div style="position:relative">
-
 <input id="regPassword" type="password" placeholder="Password">
-
 <span onclick="toggleRegisterPassword()" style="position:absolute;right:10px;top:10px;cursor:pointer">👁</span>
-
 </div>
 
-<div style="height:120px;overflow:auto;border:1px solid #333;padding:10px;margin-top:10px" id="termsBox">
+<div id="termsBox" style="height:150px;overflow:auto;border:1px solid #333;padding:10px;margin-top:10px">
 
 <p><strong>Please scroll to the bottom to enable agreement.</strong></p>
 
-<p>Terms and Services</p>
-<p>Scroll to bottom to enable agreement.</p>
-<br><br><br><br><br><br><br><br>
-<p>End of Terms</p>
+<h3>MISSION BOARD TERMS</h3>
+
+<p>Users must be 18+ to participate.</p>
+<p>Fraudulent claims or abuse will result in bans.</p>
+<p>All bounty payments are processed through PayPal.</p>
+<p>The platform may remove missions or suspend accounts.</p>
+
+<br><br><br>
+
+<p><strong>End of Terms</strong></p>
 
 </div>
 
-<label>
+<div style="margin-top:10px">
+<label style="display:flex;align-items:center;gap:8px;">
 <input type="checkbox" id="termsAgree" disabled>
-I agree to Terms
+<span>I agree to Terms</span>
 </label>
+</div>
 
 <button onclick="register()">Register</button>
-
 <button onclick="backChoice()">Back</button>
 
 </div>
-
-</div>
-
-</div>
-
-<div class="container">
-
-<div id="dashboard" class="hidden">
-
-<div class="flex">
-
-<div class="panel">
-
-<h2>Post Mission</h2>
-
-<input id="target" placeholder="Target Player">
-
-<select id="mode">
-<option>REC</option>
-<option>Theater</option>
-<option>Proving Grounds</option>
-<option>Park</option>
-</select>
-
-<input id="amount" type="number" placeholder="Bounty Amount ($7 minimum)">
-
-<p>Mission expires automatically after 20 days.</p>
-
-<div id="paypal-button-container"></div>
-
-</div>
-
-<div class="panel">
-
-<h2>Leaderboards</h2>
-
-<h3>🏆 Top Hunters</h3>
-<ul id="hunterBoard"></ul>
-
-<h3>🎯 Most Wanted</h3>
-<ul id="wantedBoard"></ul>
-
-</div>
-
-</div>
-
-<div class="panel">
-
-<h2>Active Hunts</h2>
-
-<div id="missions" class="missions-grid"></div>
-
-</div>
-
-</div>
-
-</div>
-
-<div id="missionModal" class="modal">
-
-<div class="modal-content">
-
-<h2 id="modalTarget"></h2>
-
-<p><strong>Mode:</strong> <span id="modalMode"></span></p>
-<p><strong>Bounty:</strong> $<span id="modalBounty"></span></p>
-<p><strong>Expires:</strong> <span id="modalDays"></span> days</p>
-
-<input type="file" id="proofFile" accept="video/*,image/*">
-
-<input id="paypalEmail" placeholder="PayPal Email">
-
-<button onclick="submitClaim()">Submit Proof</button>
-
-<br><br>
-
-<input id="addAmount" type="number" placeholder="Add to bounty">
-
-<button onclick="addBounty()">Add to Bounty</button>
-
-<br><br>
-
-<button onclick="closeModal()">Close</button>
 
 </div>
 
@@ -328,7 +243,6 @@ I agree to Terms
 
 const BASE="https://bounty-landing-backend.onrender.com"
 
-let selectedMission=null
 let currentUser=null
 
 function showLogin(){
@@ -359,20 +273,97 @@ p.type=p.type==="password"?"text":"password"
 
 document.addEventListener("DOMContentLoaded",()=>{
 
-termsBox.addEventListener("scroll", function () {
+termsBox.addEventListener("scroll",function(){
 
-const scrollPosition = this.scrollTop + this.clientHeight
-const scrollHeight = this.scrollHeight
+const scrollPosition=this.scrollTop + this.clientHeight
+const scrollHeight=this.scrollHeight
 
-if (scrollPosition >= scrollHeight - 5) {
-
-termsAgree.disabled = false
-
+if(scrollPosition >= scrollHeight-5){
+termsAgree.disabled=false
 }
 
 })
 
 })
+
+async function login(){
+
+const email=document.getElementById("loginEmail").value
+const password=document.getElementById("loginPassword").value
+
+if(!email || !password){
+alert("Enter email and password")
+return
+}
+
+const res=await fetch(BASE+"/login",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({email,password})
+})
+
+const data=await res.json()
+
+if(data.error){
+alert(data.error)
+return
+}
+
+localStorage.setItem("token",data.token)
+
+currentUser=data.username
+
+userCorner.innerText=data.username
+
+authModal.classList.remove("show")
+
+}
+
+async function register(){
+
+const username=document.getElementById("regDisplay").value
+const email=document.getElementById("regEmail").value
+const password=document.getElementById("regPassword").value
+const agreed=document.getElementById("termsAgree").checked
+
+if(!username || !email || !password){
+alert("Fill all fields")
+return
+}
+
+if(!agreed){
+alert("You must agree to the terms")
+return
+}
+
+const res=await fetch(BASE+"/register",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+username,
+email,
+password,
+agreedTerms:true,
+isAdult:true
+})
+})
+
+const data=await res.json()
+
+if(data.error){
+alert(data.error)
+return
+}
+
+alert("Account created. You can login now.")
+
+backChoice()
+
+}
 
 </script>
 
