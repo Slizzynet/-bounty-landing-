@@ -1,86 +1,116 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>MISSION BOARD</title>
 
 <script src="https://www.paypal.com/sdk/js?client-id=AYJrkUdCunqmHyIzD0fL4vylFWemiJsOggQbZ00__2JgpZ0agkeISjKWL-5dgPTEFPet7DO2gH2aNlrF&currency=USD"></script>
 
 <style>
 
+*{margin:0;padding:0;box-sizing:border-box}
+
 body{
 background:#070707;
+font-family:Arial,Helvetica,sans-serif;
 color:white;
-font-family:Arial;
-margin:0;
 }
 
 header{
 text-align:center;
-padding:35px;
-background:linear-gradient(#1a0000,#000);
-border-bottom:1px solid #ff2a2a44;
+padding:40px;
+background:linear-gradient(180deg,#1a0000,#000);
+border-bottom:1px solid #ff2a2a55;
 }
 
 header h1{
-color:#ff2a2a;
-font-size:46px;
+font-size:48px;
 letter-spacing:4px;
+color:#ff2a2a;
+text-shadow:0 0 20px red;
 }
 
 .live-bar{
-margin-top:10px;
-background:#111;
+text-align:center;
 padding:10px;
+background:#111;
+border-bottom:1px solid #ff2a2a33;
 }
 
 .container{
 width:95%;
-max-width:1200px;
+max-width:1300px;
 margin:auto;
 padding:30px 0;
 }
 
 .panel{
 background:#0e0e0e;
-border:1px solid #ff2a2a44;
+border:1px solid #ff2a2a33;
+border-radius:12px;
 padding:20px;
-border-radius:10px;
 margin-bottom:25px;
+}
+
+.panel h2{
+color:#ff3c3c;
+margin-bottom:15px;
 }
 
 input,select{
 width:100%;
-padding:10px;
+padding:12px;
 margin-bottom:10px;
-background:black;
+background:#000;
 border:1px solid #ff2a2a55;
+border-radius:6px;
 color:white;
 }
 
 button{
-padding:10px 14px;
+padding:10px 16px;
 background:#ff2a2a;
 border:none;
+border-radius:6px;
+font-weight:bold;
 cursor:pointer;
 }
 
-.hidden{
-display:none;
+button:hover{
+background:#ff4a4a;
+box-shadow:0 0 10px red;
+}
+
+.flex{
+display:flex;
+gap:20px;
+flex-wrap:wrap;
+}
+
+.flex>div{
+flex:1;
+min-width:280px;
 }
 
 .missions-grid{
 display:grid;
-grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
 gap:20px;
 }
 
 .mission-card{
 background:#111;
 border:1px solid #ff2a2a44;
-padding:15px;
-border-radius:8px;
+padding:18px;
+border-radius:10px;
 cursor:pointer;
+}
+
+.mission-card:hover{
+transform:scale(1.03);
+box-shadow:0 0 15px red;
 }
 
 .modal{
@@ -89,21 +119,33 @@ top:0;
 left:0;
 width:100%;
 height:100%;
-background:rgba(0,0,0,.9);
-display:none;
-justify-content:center;
+background:rgba(0,0,0,.85);
+display:flex;
 align-items:center;
+justify-content:center;
+visibility:hidden;
 }
 
 .modal.show{
-display:flex;
+visibility:visible;
 }
 
-.modal-box{
+.modal-content{
 background:#111;
+border:1px solid #ff2a2a55;
 padding:30px;
-border-radius:10px;
-width:400px;
+border-radius:12px;
+width:420px;
+}
+
+.hidden{display:none}
+
+#userCorner{
+position:fixed;
+top:10px;
+right:20px;
+color:#ff2a2a;
+font-weight:bold;
 }
 
 </style>
@@ -111,55 +153,99 @@ width:400px;
 
 <body>
 
-<header>
+<div id="userCorner"></div>
 
+<header>
 <h1>MISSION BOARD</h1>
 <p>Competitive bounty challenges</p>
-
-<div class="live-bar">
-👥 Registered Hunters: <span id="userCount">0</span>
-| 🟢 Active Now: <span id="liveCount">0</span>
-</div>
-
 </header>
 
-<div class="container">
+<div class="live-bar">
+🔥 ACTIVE PLAYERS: <span id="liveCount">0</span>
+</div>
 
-<!-- LOGIN PANEL -->
+<!-- AUTH MODAL -->
 
-<div id="authPanel" class="panel">
+<div id="authModal" class="modal show">
+
+<div class="modal-content">
+
+<div id="authChoice">
+
+<h2>Welcome</h2>
+
+<button onclick="showLogin()">Login</button>
+<button onclick="showRegister()">Register</button>
+
+</div>
+
+<div id="loginForm" class="hidden">
 
 <h2>Login</h2>
 
-<input id="loginEmail" placeholder="Email or Username">
-<input id="loginPass" type="password" placeholder="Password">
+<input id="loginEmail" placeholder="Email">
+
+<div style="position:relative">
+
+<input id="loginPassword" type="password" placeholder="Password">
+
+<span onclick="toggleLoginPassword()" style="position:absolute;right:10px;top:10px;cursor:pointer">👁</span>
+
+</div>
 
 <button onclick="login()">Login</button>
 
-<hr>
+<p style="cursor:pointer;color:#ff4a4a" onclick="forgotPassword()">Forgot Password?</p>
+
+<button onclick="backChoice()">Back</button>
+
+</div>
+
+<div id="registerForm" class="hidden">
 
 <h2>Register</h2>
 
-<input id="regUser" placeholder="Username">
+<input id="regDisplay" placeholder="Display Name">
+
 <input id="regEmail" placeholder="Email">
-<input id="regPass" type="password" placeholder="Password">
+
+<div style="position:relative">
+
+<input id="regPassword" type="password" placeholder="Password">
+
+<span onclick="toggleRegisterPassword()" style="position:absolute;right:10px;top:10px;cursor:pointer">👁</span>
+
+</div>
+
+<div style="height:120px;overflow:auto;border:1px solid #333;padding:10px;margin-top:10px" id="termsBox">
+
+<p>Terms and Services</p>
+<p>Scroll to bottom to enable agreement.</p>
+<br><br><br><br><br><br><br><br>
+<p>End of Terms</p>
+
+</div>
 
 <label>
-<input type="checkbox" id="agreeTerms"> I accept Terms & Conditions
-</label>
-
-<label>
-<input type="checkbox" id="isAdult"> I confirm I am 18+
+<input type="checkbox" id="termsAgree" disabled>
+I agree to Terms
 </label>
 
 <button onclick="register()">Register</button>
 
+<button onclick="backChoice()">Back</button>
+
 </div>
 
+</div>
 
-<!-- DASHBOARD -->
+</div>
+
+<div class="container">
 
 <div id="dashboard" class="hidden">
+
+<div class="flex">
 
 <div class="panel">
 
@@ -169,14 +255,30 @@ width:400px;
 
 <select id="mode">
 <option>REC</option>
-<option>Park</option>
 <option>Theater</option>
 <option>Proving Grounds</option>
+<option>Park</option>
 </select>
 
-<input id="amount" type="number" placeholder="Bounty Amount">
+<input id="amount" type="number" placeholder="Bounty Amount ($7 minimum)">
+
+<p>Mission expires automatically after 20 days.</p>
 
 <div id="paypal-button-container"></div>
+
+</div>
+
+<div class="panel">
+
+<h2>Leaderboards</h2>
+
+<h3>🏆 Top Hunters</h3>
+<ul id="hunterBoard"></ul>
+
+<h3>🎯 Most Wanted</h3>
+<ul id="wantedBoard"></ul>
+
+</div>
 
 </div>
 
@@ -192,20 +294,27 @@ width:400px;
 
 </div>
 
-<!-- MISSION MODAL -->
-
 <div id="missionModal" class="modal">
 
-<div class="modal-box">
+<div class="modal-content">
 
 <h2 id="modalTarget"></h2>
 
-<p>Bounty: $<span id="modalBounty"></span></p>
+<p><strong>Mode:</strong> <span id="modalMode"></span></p>
+<p><strong>Bounty:</strong> $<span id="modalBounty"></span></p>
+<p><strong>Expires:</strong> <span id="modalDays"></span> days</p>
 
-<input type="file" id="proofFile">
+<input type="file" id="proofFile" accept="video/*,image/*">
+
 <input id="paypalEmail" placeholder="PayPal Email">
 
 <button onclick="submitClaim()">Submit Proof</button>
+
+<br><br>
+
+<input id="addAmount" type="number" placeholder="Add to bounty">
+
+<button onclick="addBounty()">Add to Bounty</button>
 
 <br><br>
 
@@ -215,36 +324,83 @@ width:400px;
 
 </div>
 
-
 <script>
 
 const BASE="https://bounty-landing-backend.onrender.com"
 
-let currentUser=null
 let selectedMission=null
+let currentUser=null
 
-/* REGISTER */
+function showLogin(){
+authChoice.classList.add("hidden")
+loginForm.classList.remove("hidden")
+}
+
+function showRegister(){
+authChoice.classList.add("hidden")
+registerForm.classList.remove("hidden")
+}
+
+function backChoice(){
+loginForm.classList.add("hidden")
+registerForm.classList.add("hidden")
+authChoice.classList.remove("hidden")
+}
+
+function toggleLoginPassword(){
+let p=document.getElementById("loginPassword")
+p.type=p.type==="password"?"text":"password"
+}
+
+function toggleRegisterPassword(){
+let p=document.getElementById("regPassword")
+p.type=p.type==="password"?"text":"password"
+}
+
+document.addEventListener("DOMContentLoaded",()=>{
+termsBox.addEventListener("scroll",function(){
+if(this.scrollTop + this.clientHeight >= this.scrollHeight){
+termsAgree.disabled=false
+}
+})
+})
+
+async function forgotPassword(){
+
+let email=loginEmail.value
+
+await fetch(BASE+"/forgot-password",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({email})
+})
+
+alert("If the account exists a reset email was sent")
+
+}
 
 async function register(){
+
+if(!termsAgree.checked){
+alert("You must agree to terms")
+return
+}
 
 let res=await fetch(BASE+"/register",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({
-username:regUser.value,
 email:regEmail.value,
-password:regPass.value,
-agreedTerms:agreeTerms.checked,
-isAdult:isAdult.checked
+username:regDisplay.value,
+password:regPassword.value
 })
 })
 
 let data=await res.json()
-alert(data.message || data.error)
+
+alert(data.message||data.error)
 
 }
-
-/* LOGIN */
 
 async function login(){
 
@@ -253,7 +409,7 @@ method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({
 email:loginEmail.value,
-password:loginPass.value
+password:loginPassword.value
 })
 })
 
@@ -263,11 +419,19 @@ if(data.token){
 
 currentUser=data.username
 
-authPanel.classList.add("hidden")
+userCorner.innerText=data.username
+
+authModal.classList.remove("show")
+
 dashboard.classList.remove("hidden")
 
 loadMissions()
-heartbeat()
+loadLeaderboards()
+loadLive()
+
+}else{
+
+alert(data.error)
 
 }
 
@@ -278,38 +442,38 @@ heartbeat()
 async function loadMissions(){
 
 let res=await fetch(BASE+"/missions")
-let missions=await res.json()
+let data=await res.json()
 
-missionsDiv=document.getElementById("missions")
-missionsDiv.innerHTML=""
+missions.innerHTML=""
 
-missions.forEach(m=>{
+data.forEach(m=>{
 
 let card=document.createElement("div")
+
 card.className="mission-card"
 
 card.innerHTML=`
 <h3>${m.target}</h3>
-<p>$${m.bounty_amount}</p>
-<p>${m.days_remaining} days left</p>
+<p>💰 $${m.bounty_amount}</p>
+<p>⏳ ${m.days_remaining} days left</p>
 `
 
 card.onclick=()=>openMission(m)
 
-missionsDiv.appendChild(card)
+missions.appendChild(card)
 
 })
 
 }
-
-/* MODAL */
 
 function openMission(m){
 
 selectedMission=m
 
 modalTarget.innerText=m.target
+modalMode.innerText=m.reason
 modalBounty.innerText=m.bounty_amount
+modalDays.innerText=m.days_remaining
 
 missionModal.classList.add("show")
 
@@ -319,9 +483,12 @@ function closeModal(){
 missionModal.classList.remove("show")
 }
 
-/* CLAIM */
-
 async function submitClaim(){
+
+if(!proofFile.files[0]){
+alert("Upload proof")
+return
+}
 
 let form=new FormData()
 
@@ -330,46 +497,107 @@ form.append("paypal",paypalEmail.value)
 form.append("hunter",currentUser)
 form.append("file",proofFile.files[0])
 
-await fetch(BASE+"/claims",{
-method:"POST",
-body:form
-})
+let res=await fetch(BASE+"/claims",{method:"POST",body:form})
 
-alert("Claim submitted")
+let data=await res.json()
 
-}
-
-/* COUNTS */
-
-async function loadCounts(){
-
-let u=await fetch(BASE+"/user-count")
-let users=await u.json()
-
-userCount.innerText=users.total
-
-let l=await fetch(BASE+"/live-count")
-let live=await l.json()
-
-liveCount.innerText=live.players
+alert(data.message||data.error)
 
 }
 
-/* HEARTBEAT */
+async function addBounty(){
 
-async function heartbeat(){
+await fetch(BASE+"/add-bounty",{
 
-await fetch(BASE+"/heartbeat",{
 method:"POST",
+
 headers:{"Content-Type":"application/json"},
-body:JSON.stringify({username:currentUser})
+
+body:JSON.stringify({
+
+missionId:selectedMission.id,
+amount:addAmount.value,
+username:currentUser
+
 })
 
-setTimeout(heartbeat,30000)
+})
+
+alert("Bounty increased")
+
+loadMissions()
 
 }
 
-loadCounts()
+async function loadLive(){
+
+let res=await fetch(BASE+"/live-count")
+
+let data=await res.json()
+
+liveCount.innerText=data.players
+
+}
+
+setInterval(loadLive,5000)
+
+paypal.Buttons({
+
+createOrder:async()=>{
+
+if(amount.value<7){
+alert("Minimum bounty is $7")
+return
+}
+
+let res=await fetch(BASE+"/create-order",{
+
+method:"POST",
+
+headers:{"Content-Type":"application/json"},
+
+body:JSON.stringify({
+
+target:target.value,
+reason:mode.value,
+amount:amount.value
+
+})
+
+})
+
+let order=await res.json()
+
+return order.id
+
+},
+
+onApprove:async(data)=>{
+
+await fetch(BASE+"/capture-order",{
+
+method:"POST",
+
+headers:{"Content-Type":"application/json"},
+
+body:JSON.stringify({
+
+orderId:data.orderID,
+target:target.value,
+reason:mode.value,
+amount:amount.value
+
+})
+
+})
+
+alert("Mission created")
+
+loadMissions()
+
+}
+
+}).render("#paypal-button-container")
 
 </script>
 
