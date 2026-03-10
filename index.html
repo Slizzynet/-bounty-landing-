@@ -217,6 +217,8 @@ font-weight:bold;
 
 <div style="height:120px;overflow:auto;border:1px solid #333;padding:10px;margin-top:10px" id="termsBox">
 
+<p><strong>Please scroll to the bottom to enable agreement.</strong></p>
+
 <p>Terms and Services</p>
 <p>Scroll to bottom to enable agreement.</p>
 <br><br><br><br><br><br><br><br>
@@ -356,246 +358,21 @@ p.type=p.type==="password"?"text":"password"
 }
 
 document.addEventListener("DOMContentLoaded",()=>{
-termsBox.addEventListener("scroll",function(){
-if(this.scrollTop + this.clientHeight >= this.scrollHeight){
-termsAgree.disabled=false
-}
-})
-})
 
-async function forgotPassword(){
+termsBox.addEventListener("scroll", function () {
 
-let email=loginEmail.value
+const scrollPosition = this.scrollTop + this.clientHeight
+const scrollHeight = this.scrollHeight
 
-await fetch(BASE+"/forgot-password",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({email})
-})
+if (scrollPosition >= scrollHeight - 5) {
 
-alert("If the account exists a reset email was sent")
+termsAgree.disabled = false
 
 }
-
-async function register(){
-
-if(!termsAgree.checked){
-alert("You must agree to terms")
-return
-}
-
-let res=await fetch(BASE+"/register",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({
-email:regEmail.value,
-username:regDisplay.value,
-password:regPassword.value,
-agreedTerms:true,
-isAdult:true
-})
-})
-
-let data=await res.json()
-
-alert(data.message||data.error)
-
-}
-
-async function login(){
-
-let res=await fetch(BASE+"/login",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({
-email:loginEmail.value,
-password:loginPassword.value
-})
-})
-
-let data=await res.json()
-
-if(data.token){
-
-currentUser=data.username
-
-userCorner.innerText=data.username
-
-authModal.classList.remove("show")
-
-dashboard.classList.remove("hidden")
-
-loadMissions()
-loadLeaderboards()
-loadLive()
-
-}else{
-
-alert(data.error)
-
-}
-
-}
-
-async function loadMissions(){
-
-let res=await fetch(BASE+"/missions")
-let data=await res.json()
-
-missions.innerHTML=""
-
-data.forEach(m=>{
-
-let card=document.createElement("div")
-
-card.className="mission-card"
-
-card.innerHTML=`
-<h3>${m.target}</h3>
-<p>💰 $${m.bounty_amount}</p>
-<p>⏳ ${m.days_remaining} days left</p>
-`
-
-card.onclick=()=>openMission(m)
-
-missions.appendChild(card)
-
-})
-
-}
-
-function openMission(m){
-
-selectedMission=m
-
-modalTarget.innerText=m.target
-modalMode.innerText=m.reason || m.mode
-modalBounty.innerText=m.bounty_amount
-modalDays.innerText=m.days_remaining
-
-missionModal.classList.add("show")
-
-}
-
-function closeModal(){
-missionModal.classList.remove("show")
-}
-
-async function submitClaim(){
-
-if(!proofFile.files[0]){
-alert("Upload proof")
-return
-}
-
-let form=new FormData()
-
-form.append("missionId",selectedMission.id)
-form.append("paypal",paypalEmail.value)
-form.append("hunter",currentUser)
-form.append("file",proofFile.files[0])
-
-let res=await fetch(BASE+"/claims",{method:"POST",body:form})
-
-let data=await res.json()
-
-alert(data.message||data.error)
-
-}
-
-async function addBounty(){
-
-await fetch(BASE+"/add-bounty",{
-
-method:"POST",
-
-headers:{"Content-Type":"application/json"},
-
-body:JSON.stringify({
-
-missionId:selectedMission.id,
-amount:addAmount.value,
-username:currentUser
 
 })
 
 })
-
-alert("Bounty increased")
-
-loadMissions()
-
-}
-
-async function loadLive(){
-
-let res=await fetch(BASE+"/live-count")
-
-let data=await res.json()
-
-liveCount.innerText=data.players || data.live || 0
-
-}
-
-setInterval(loadLive,5000)
-
-paypal.Buttons({
-
-createOrder:async()=>{
-
-if(amount.value < 7){
-alert("Minimum bounty is $7")
-return false
-}
-
-let res=await fetch(BASE+"/create-order",{
-
-method:"POST",
-
-headers:{"Content-Type":"application/json"},
-
-body:JSON.stringify({
-
-target:target.value,
-reason:mode.value,
-amount:amount.value
-
-})
-
-})
-
-let order=await res.json()
-
-return order.id
-
-},
-
-onApprove:async(data)=>{
-
-await fetch(BASE+"/capture-order",{
-
-method:"POST",
-
-headers:{"Content-Type":"application/json"},
-
-body:JSON.stringify({
-
-orderId:data.orderID,
-target:target.value,
-reason:mode.value,
-amount:amount.value
-
-})
-
-})
-
-alert("Mission created")
-
-loadMissions()
-
-}
-
-}).render("#paypal-button-container")
 
 </script>
 
