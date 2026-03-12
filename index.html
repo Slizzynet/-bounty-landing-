@@ -618,7 +618,7 @@ if(data.error){
 console.error("Load missions error:",data.error)
 return
 }
-allMissions=Array.isArray(data)?data:data.missions||[]
+allMissions=Array.isArray(data)?data:[]
 renderMissions()
 }catch(e){
 console.error("Load missions error:",e)
@@ -670,7 +670,7 @@ return 999
 
 function openMissionModal(mission){
 try{
-currentMissionId=mission._id||mission.id
+currentMissionId=mission.id||mission._id
 document.getElementById("modalMissionTitle").innerText=mission.target
 document.getElementById("modalTarget").innerText=mission.target
 document.getElementById("modalMode").innerText=mission.mode
@@ -767,31 +767,19 @@ try{
 const target=document.getElementById("missionTarget").value
 const mode=document.getElementById("missionMode").value
 const bounty=document.getElementById("missionBounty").value
-const file=document.getElementById("missionProof").files[0]
 
 if(!target || !mode || !bounty){
 alert("Fill all fields")
 return
 }
 
-if(file && !validateFile(file)){
-return
-}
-
-const formData=new FormData()
-formData.append("target",target)
-formData.append("mode",mode)
-formData.append("bounty",bounty)
-if(file){
-formData.append("proof",file)
-}
-
 const res=await fetch(BASE+"/missions",{
 method:"POST",
 headers:{
-"Authorization":"Bearer "+currentToken
+"Authorization":"Bearer "+currentToken,
+"Content-Type":"application/json"
 },
-body:formData
+body:JSON.stringify({target,mode,bounty})
 })
 
 const data=await res.json()
@@ -865,7 +853,7 @@ topHunters.innerHTML="<p style='font-size:12px;color:#999'>No data</p>"
 hunters.forEach((h,i)=>{
 const item=document.createElement("div")
 item.className="leaderboard-item"
-item.innerHTML=`<span>${i+1}. ${h.username}</span><span style="color:#ffaa00">${h.score}</span>`
+item.innerHTML=`<span>${i+1}. ${h.hunter||h.username}</span><span style="color:#ffaa00">${h.score||0}</span>`
 topHunters.appendChild(item)
 })
 }
@@ -875,7 +863,7 @@ mostWanted.innerHTML="<p style='font-size:12px;color:#999'>No data</p>"
 wanted.forEach((w,i)=>{
 const item=document.createElement("div")
 item.className="leaderboard-item"
-item.innerHTML=`<span>${i+1}. ${w.username}</span><span style="color:#ffaa00">${w.bounty}</span>`
+item.innerHTML=`<span>${i+1}. ${w.target}</span><span style="color:#ffaa00">${w.bounty||0}</span>`
 mostWanted.appendChild(item)
 })
 }
