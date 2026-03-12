@@ -69,6 +69,10 @@ border-radius:6px;
 color:white;
 }
 
+input[type="file"]{
+padding:6px;
+}
+
 button{
 padding:10px 16px;
 background:#ff2a2a;
@@ -124,6 +128,7 @@ display:flex;
 align-items:center;
 justify-content:center;
 visibility:hidden;
+z-index:1000;
 }
 
 .modal.show{
@@ -136,6 +141,8 @@ border:1px solid #ff2a2a55;
 padding:30px;
 border-radius:12px;
 width:420px;
+max-height:80vh;
+overflow-y:auto;
 }
 
 .hidden{display:none}
@@ -146,6 +153,47 @@ top:10px;
 right:20px;
 color:#ff2a2a;
 font-weight:bold;
+z-index:999;
+}
+
+.logout-btn{
+margin-left:15px;
+padding:8px 12px;
+font-size:12px;
+}
+
+.password-toggle{
+position:absolute;
+right:10px;
+top:10px;
+cursor:pointer;
+font-size:18px;
+user-select:none;
+}
+
+.file-upload{
+margin-bottom:10px;
+}
+
+.expiry-badge{
+color:#ffaa00;
+font-size:12px;
+margin-top:5px;
+}
+
+.leaderboard-item{
+padding:10px;
+border-bottom:1px solid #333;
+display:flex;
+justify-content:space-between;
+}
+
+.leaderboard-item:last-child{
+border-bottom:none;
+}
+
+.paypal-container{
+margin-top:15px;
 }
 
 </style>
@@ -185,11 +233,11 @@ font-weight:bold;
 
 <div style="position:relative">
 <input id="loginPassword" type="password" placeholder="Password">
-<span onclick="toggleLoginPassword()" style="position:absolute;right:10px;top:10px;cursor:pointer">👁</span>
+<span class="password-toggle" onclick="toggleLoginPassword()">👁</span>
 </div>
 
 <button onclick="login()">Login</button>
-
+<button onclick="forgotPassword()">Forgot Password?</button>
 <button onclick="backChoice()">Back</button>
 
 </div>
@@ -203,7 +251,7 @@ font-weight:bold;
 
 <div style="position:relative">
 <input id="regPassword" type="password" placeholder="Password">
-<span onclick="toggleRegisterPassword()" style="position:absolute;right:10px;top:10px;cursor:pointer">👁</span>
+<span class="password-toggle" onclick="toggleRegisterPassword()">👁</span>
 </div>
 
 <div id="termsBox" style="height:150px;overflow:auto;border:1px solid #333;padding:10px;margin-top:10px">
@@ -239,11 +287,91 @@ font-weight:bold;
 
 </div>
 
+<div id="dashboard" class="hidden">
+
+<div class="container">
+
+<div class="panel">
+<h2>Post Bounty</h2>
+<div class="flex">
+<div>
+<input id="missionTarget" placeholder="Target (username or task)">
+<input id="missionMode" placeholder="Mode (e.g., Competition, Proof-of-Skill)">
+<input id="missionBounty" type="number" placeholder="Bounty Amount ($)">
+</div>
+<div>
+<div class="file-upload">
+<label>Upload Proof (Image/Video)</label>
+<input id="missionProof" type="file" accept="image/*,video/*">
+</div>
+<button onclick="postMission()">Post Mission</button>
+</div>
+</div>
+<div id="paypalContainer" class="paypal-container"></div>
+</div>
+
+<div class="flex">
+
+<div>
+<div class="panel">
+<h2>Mission Board</h2>
+<div id="missionsGrid" class="missions-grid"></div>
+</div>
+</div>
+
+<div style="min-width:280px">
+
+<div class="panel">
+<h2>Top Hunters</h2>
+<div id="topHunters"></div>
+</div>
+
+<div class="panel">
+<h2>Most Wanted</h2>
+<div id="mostWanted"></div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<div id="missionModal" class="modal">
+
+<div class="modal-content">
+
+<h2 id="modalMissionTitle">Mission Details</h2>
+
+<p><strong>Target:</strong> <span id="modalTarget"></span></p>
+<p><strong>Mode:</strong> <span id="modalMode"></span></p>
+<p><strong>Bounty:</strong> $<span id="modalBounty"></span></p>
+<p><strong>Posted by:</strong> <span id="modalPostedBy"></span></p>
+<div id="expiryDisplay" class="expiry-badge"></div>
+
+<div style="margin-top:15px">
+<label>Submit Proof (Image/Video)</label>
+<input id="proofFile" type="file" accept="image/*,video/*">
+</div>
+
+<button onclick="submitProof()">Submit Proof</button>
+<button onclick="addBounty()">Add Bounty</button>
+<button onclick="closeMissionModal()">Close</button>
+
+</div>
+
+</div>
+
 <script>
 
 const BASE="https://bounty-landing-backend.onrender.com"
 
 let currentUser=null
+let currentToken=null
+let currentMissionId=null
+let allMissions=[]
 
 function showLogin(){
 authChoice.classList.add("hidden")
@@ -271,23 +399,42 @@ let p=document.getElementById("regPassword")
 p.type=p.type==="password"?"text":"password"
 }
 
-document.addEventListener("DOMContentLoaded",()=>{
-
+function setupTermsScroll(){
+try{
 termsBox.addEventListener("scroll",function(){
-
 const scrollPosition=this.scrollTop + this.clientHeight
 const scrollHeight=this.scrollHeight
-
 if(scrollPosition >= scrollHeight-5){
 termsAgree.disabled=false
 }
-
 })
+}catch(e){
+console.warn("Terms scroll setup failed:",e)
+}
+}
 
-})
+function restoreSession(){
+const token=localStorage.getItem("token")
+const username=localStorage.getItem("username")
+if(token && username){
+currentToken=token
+currentUser=username
+authModal.classList.remove("show")
+dashboard.classList.remove("hidden")
+userCorner.innerText=username+" "
+const logoutBtn=document.createElement("button")
+logoutBtn.className="logout-btn"
+logoutBtn.innerText="Logout"
+logoutBtn.onclick=logout
+userCorner.appendChild(logoutBtn)
+loadMissions()
+loadLeaderboards()
+startActivePlayersCounter()
+}
+}
 
 async function login(){
-
+try{
 const email=document.getElementById("loginEmail").value
 const password=document.getElementById("loginPassword").value
 
@@ -312,17 +459,33 @@ return
 }
 
 localStorage.setItem("token",data.token)
+localStorage.setItem("username",data.username)
 
+currentToken=data.token
 currentUser=data.username
 
-userCorner.innerText=data.username
+userCorner.innerHTML=data.username+" "
+const logoutBtn=document.createElement("button")
+logoutBtn.className="logout-btn"
+logoutBtn.innerText="Logout"
+logoutBtn.onclick=logout
+userCorner.appendChild(logoutBtn)
 
 authModal.classList.remove("show")
+dashboard.classList.remove("hidden")
 
+loadMissions()
+loadLeaderboards()
+startActivePlayersCounter()
+
+}catch(e){
+console.error("Login error:",e)
+alert("Login failed. Please try again.")
+}
 }
 
 async function register(){
-
+try{
 const username=document.getElementById("regDisplay").value
 const email=document.getElementById("regEmail").value
 const password=document.getElementById("regPassword").value
@@ -360,10 +523,374 @@ return
 }
 
 alert("Account created. You can login now.")
-
 backChoice()
 
+}catch(e){
+console.error("Register error:",e)
+alert("Registration failed. Please try again.")
 }
+}
+
+function logout(){
+try{
+localStorage.removeItem("token")
+localStorage.removeItem("username")
+currentToken=null
+currentUser=null
+authModal.classList.add("show")
+dashboard.classList.add("hidden")
+userCorner.innerHTML=""
+authChoice.classList.remove("hidden")
+loginForm.classList.add("hidden")
+registerForm.classList.add("hidden")
+document.getElementById("loginEmail").value=""
+document.getElementById("loginPassword").value=""
+document.getElementById("regDisplay").value=""
+document.getElementById("regEmail").value=""
+document.getElementById("regPassword").value=""
+document.getElementById("termsAgree").checked=false
+document.getElementById("termsAgree").disabled=true
+}catch(e){
+console.error("Logout error:",e)
+}
+}
+
+async function forgotPassword(){
+try{
+const email=prompt("Enter your email address:")
+if(!email){
+return
+}
+const res=await fetch(BASE+"/forgot-password",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({email})
+})
+const data=await res.json()
+if(data.error){
+alert(data.error)
+}else{
+alert("Password reset link sent to your email.")
+}
+}catch(e){
+console.error("Forgot password error:",e)
+alert("Request failed. Please try again.")
+}
+}
+
+async function loadMissions(){
+try{
+const res=await fetch(BASE+"/missions",{
+method:"GET",
+headers:{
+"Authorization":"Bearer "+currentToken
+}
+})
+const data=await res.json()
+if(data.error){
+console.error("Load missions error:",data.error)
+return
+}
+allMissions=Array.isArray(data)?data:data.missions||[]
+renderMissions()
+}catch(e){
+console.error("Load missions error:",e)
+}
+}
+
+function renderMissions(){
+try{
+const grid=document.getElementById("missionsGrid")
+if(!grid) return
+grid.innerHTML=""
+if(!allMissions || allMissions.length===0){
+grid.innerHTML="<p>No missions available</p>"
+return
+}
+allMissions.forEach(mission=>{
+const card=document.createElement("div")
+card.className="mission-card"
+const expiryDays=calculateDaysRemaining(mission.expiresAt)
+const expiryText=expiryDays>=0?`Expires in ${expiryDays} days`:"Expired"
+card.innerHTML=`
+<p><strong>${mission.target}</strong></p>
+<p>${mission.mode}</p>
+<p style="color:#ffaa00">$${mission.bounty}</p>
+<p style="font-size:12px;color:#999">by ${mission.postedBy}</p>
+<div style="font-size:11px;color:#ff6666;margin-top:8px">${expiryText}</div>
+`
+card.onclick=()=>openMissionModal(mission)
+grid.appendChild(card)
+})
+}catch(e){
+console.error("Render missions error:",e)
+}
+}
+
+function calculateDaysRemaining(expiryDate){
+try{
+if(!expiryDate) return 999
+const expiry=new Date(expiryDate)
+const now=new Date()
+const diff=expiry-now
+const days=Math.ceil(diff/(1000*60*60*24))
+return Math.max(days,0)
+}catch(e){
+console.warn("Calculate days error:",e)
+return 999
+}
+}
+
+function openMissionModal(mission){
+try{
+currentMissionId=mission._id||mission.id
+document.getElementById("modalMissionTitle").innerText=mission.target
+document.getElementById("modalTarget").innerText=mission.target
+document.getElementById("modalMode").innerText=mission.mode
+document.getElementById("modalBounty").innerText=mission.bounty
+document.getElementById("modalPostedBy").innerText=mission.postedBy
+const expiryDays=calculateDaysRemaining(mission.expiresAt)
+const expiryText=expiryDays>=0?`⏱ Expires in ${expiryDays} days`:"⚠ Expired"
+document.getElementById("expiryDisplay").innerText=expiryText
+missionModal.classList.add("show")
+}catch(e){
+console.error("Open mission modal error:",e)
+}
+}
+
+function closeMissionModal(){
+try{
+missionModal.classList.remove("show")
+currentMissionId=null
+document.getElementById("proofFile").value=""
+}catch(e){
+console.error("Close mission modal error:",e)
+}
+}
+
+async function submitProof(){
+try{
+const file=document.getElementById("proofFile").files[0]
+if(!file){
+alert("Select a file")
+return
+}
+if(!validateFile(file)){
+return
+}
+if(!currentMissionId){
+alert("Mission not selected")
+return
+}
+const formData=new FormData()
+formData.append("proof",file)
+const res=await fetch(BASE+"/missions/"+currentMissionId+"/claim",{
+method:"POST",
+headers:{
+"Authorization":"Bearer "+currentToken
+},
+body:formData
+})
+const data=await res.json()
+if(data.error){
+alert(data.error)
+}else{
+alert("Proof submitted successfully!")
+closeMissionModal()
+loadMissions()
+loadLeaderboards()
+}
+}catch(e){
+console.error("Submit proof error:",e)
+alert("Failed to submit proof.")
+}
+}
+
+async function addBounty(){
+try{
+const amount=prompt("Enter bounty amount ($):")
+if(!amount || isNaN(amount) || amount<=0){
+alert("Enter a valid amount")
+return
+}
+const res=await fetch(BASE+"/missions/"+currentMissionId+"/add-bounty",{
+method:"POST",
+headers:{
+"Authorization":"Bearer "+currentToken,
+"Content-Type":"application/json"
+},
+body:JSON.stringify({amount:parseFloat(amount)})
+})
+const data=await res.json()
+if(data.error){
+alert(data.error)
+}else{
+alert("Bounty added!")
+closeMissionModal()
+loadMissions()
+}
+}catch(e){
+console.error("Add bounty error:",e)
+alert("Failed to add bounty.")
+}
+}
+
+async function postMission(){
+try{
+const target=document.getElementById("missionTarget").value
+const mode=document.getElementById("missionMode").value
+const bounty=document.getElementById("missionBounty").value
+const file=document.getElementById("missionProof").files[0]
+
+if(!target || !mode || !bounty){
+alert("Fill all fields")
+return
+}
+
+if(file && !validateFile(file)){
+return
+}
+
+const formData=new FormData()
+formData.append("target",target)
+formData.append("mode",mode)
+formData.append("bounty",bounty)
+if(file){
+formData.append("proof",file)
+}
+
+const res=await fetch(BASE+"/missions",{
+method:"POST",
+headers:{
+"Authorization":"Bearer "+currentToken
+},
+body:formData
+})
+
+const data=await res.json()
+
+if(data.error){
+alert(data.error)
+}else{
+alert("Mission posted!")
+document.getElementById("missionTarget").value=""
+document.getElementById("missionMode").value=""
+document.getElementById("missionBounty").value=""
+document.getElementById("missionProof").value=""
+loadMissions()
+}
+}catch(e){
+console.error("Post mission error:",e)
+alert("Failed to post mission.")
+}
+}
+
+function validateFile(file){
+try{
+const maxSize=50*1024*1024
+if(file.size>maxSize){
+alert("File too large. Max 50MB.")
+return false
+}
+const validTypes=["image/jpeg","image/png","image/gif","video/mp4","video/webm","video/quicktime"]
+if(!validTypes.includes(file.type)){
+alert("Only image or video files allowed.")
+return false
+}
+return true
+}catch(e){
+console.error("Validate file error:",e)
+return false
+}
+}
+
+async function loadLeaderboards(){
+try{
+const res=await fetch(BASE+"/leaderboards",{
+method:"GET",
+headers:{
+"Authorization":"Bearer "+currentToken
+}
+})
+const data=await res.json()
+if(data.error){
+console.error("Load leaderboards error:",data.error)
+return
+}
+renderLeaderboards(data)
+}catch(e){
+console.error("Load leaderboards error:",e)
+}
+}
+
+function renderLeaderboards(data){
+try{
+const topHunters=document.getElementById("topHunters")
+const mostWanted=document.getElementById("mostWanted")
+if(!topHunters || !mostWanted) return
+topHunters.innerHTML=""
+mostWanted.innerHTML=""
+const hunters=data.topHunters||[]
+const wanted=data.mostWanted||[]
+if(hunters.length===0){
+topHunters.innerHTML="<p style='font-size:12px;color:#999'>No data</p>"
+}else{
+hunters.forEach((h,i)=>{
+const item=document.createElement("div")
+item.className="leaderboard-item"
+item.innerHTML=`<span>${i+1}. ${h.username}</span><span style="color:#ffaa00">${h.score}</span>`
+topHunters.appendChild(item)
+})
+}
+if(wanted.length===0){
+mostWanted.innerHTML="<p style='font-size:12px;color:#999'>No data</p>"
+}else{
+wanted.forEach((w,i)=>{
+const item=document.createElement("div")
+item.className="leaderboard-item"
+item.innerHTML=`<span>${i+1}. ${w.username}</span><span style="color:#ffaa00">${w.bounty}</span>`
+mostWanted.appendChild(item)
+})
+}
+}catch(e){
+console.error("Render leaderboards error:",e)
+}
+}
+
+async function updateActivePlayersCount(){
+try{
+const res=await fetch(BASE+"/active-players",{
+headers:{
+"Authorization":"Bearer "+currentToken
+}
+})
+const data=await res.json()
+const count=data.count||0
+document.getElementById("liveCount").innerText=count
+}catch(e){
+console.warn("Update active players error:",e)
+}
+}
+
+function startActivePlayersCounter(){
+try{
+updateActivePlayersCount()
+setInterval(updateActivePlayersCount,5000)
+}catch(e){
+console.error("Active players counter error:",e)
+}
+}
+
+document.addEventListener("DOMContentLoaded",()=>{
+try{
+setupTermsScroll()
+restoreSession()
+}catch(e){
+console.error("DOMContentLoaded error:",e)
+}
+})
 
 </script>
 
