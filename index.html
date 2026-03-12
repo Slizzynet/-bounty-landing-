@@ -80,6 +80,8 @@ border:none;
 border-radius:6px;
 font-weight:bold;
 cursor:pointer;
+margin-right:5px;
+margin-bottom:5px;
 }
 
 button:hover{
@@ -156,12 +158,6 @@ font-weight:bold;
 z-index:999;
 }
 
-.logout-btn{
-margin-left:15px;
-padding:8px 12px;
-font-size:12px;
-}
-
 .password-toggle{
 position:absolute;
 right:10px;
@@ -169,10 +165,6 @@ top:10px;
 cursor:pointer;
 font-size:18px;
 user-select:none;
-}
-
-.file-upload{
-margin-bottom:10px;
 }
 
 .expiry-badge{
@@ -190,10 +182,6 @@ justify-content:space-between;
 
 .leaderboard-item:last-child{
 border-bottom:none;
-}
-
-.paypal-container{
-margin-top:15px;
 }
 
 </style>
@@ -254,20 +242,43 @@ margin-top:15px;
 <span class="password-toggle" onclick="toggleRegisterPassword()">👁</span>
 </div>
 
-<div id="termsBox" style="height:150px;overflow:auto;border:1px solid #333;padding:10px;margin-top:10px">
+<div id="termsBox" style="height:150px;overflow:auto;border:1px solid #333;padding:10px;margin-top:10px;font-size:12px">
 
 <p><strong>Please scroll to the bottom to enable agreement.</strong></p>
 
-<h3>MISSION BOARD TERMS</h3>
+<h3>MISSION BOARD TERMS OF SERVICE</h3>
 
-<p>Users must be 18+ to participate.</p>
-<p>Fraudulent claims or abuse will result in bans.</p>
-<p>All bounty payments are processed through PayPal.</p>
-<p>The platform may remove missions or suspend accounts.</p>
+<h4>1. USER ELIGIBILITY</h4>
+<p>Users must be at least 18 years old to participate in the platform.</p>
 
-<br><br><br>
+<h4>2. ACCOUNT RESPONSIBILITY</h4>
+<p>Users are responsible for maintaining the security of their accounts and login credentials.</p>
 
-<p><strong>End of Terms</strong></p>
+<h4>3. BOUNTY MISSIONS</h4>
+<p>Users may post bounty challenges against players. Bounties represent voluntary competitive challenges.</p>
+
+<h4>4. CLAIMING BOUNTIES</h4>
+<p>Hunters must submit video or image proof showing mission completion. Submissions may be reviewed before approval.</p>
+
+<h4>5. FRAUD AND ABUSE</h4>
+<p>Submitting false claims, manipulating results, or attempting to exploit the system may result in permanent account suspension.</p>
+
+<h4>6. PAYMENTS</h4>
+<p>All bounty funding is processed through PayPal. The platform may take processing time to verify payments and claims.</p>
+
+<h4>7. PLATFORM RIGHTS</h4>
+<p>MISSION BOARD reserves the right to remove missions, suspend accounts, or modify rules to maintain fairness and security.</p>
+
+<h4>8. LIMITATION OF LIABILITY</h4>
+<p>The platform is provided as-is and is not responsible for disputes between players.</p>
+
+<h4>9. DATA USE</h4>
+<p>User information may be used for authentication, security, and leaderboard tracking.</p>
+
+<h4>10. AGREEMENT</h4>
+<p>By creating an account and checking the agreement box, the user agrees to these Terms and confirms they are 18 years or older.</p>
+
+<br><br>
 
 </div>
 
@@ -300,14 +311,12 @@ margin-top:15px;
 <input id="missionBounty" type="number" placeholder="Bounty Amount ($)">
 </div>
 <div>
-<div class="file-upload">
 <label>Upload Proof (Image/Video)</label>
 <input id="missionProof" type="file" accept="image/*,video/*">
-</div>
 <button onclick="postMission()">Post Mission</button>
 </div>
 </div>
-<div id="paypalContainer" class="paypal-container"></div>
+<div id="paypalContainer"></div>
 </div>
 
 <div class="flex">
@@ -414,6 +423,7 @@ console.warn("Terms scroll setup failed:",e)
 }
 
 function restoreSession(){
+try{
 const token=localStorage.getItem("token")
 const username=localStorage.getItem("username")
 if(token && username){
@@ -421,15 +431,20 @@ currentToken=token
 currentUser=username
 authModal.classList.remove("show")
 dashboard.classList.remove("hidden")
-userCorner.innerText=username+" "
+userCorner.innerText=username
 const logoutBtn=document.createElement("button")
-logoutBtn.className="logout-btn"
+logoutBtn.style.marginLeft="10px"
+logoutBtn.style.padding="8px 12px"
+logoutBtn.style.fontSize="12px"
 logoutBtn.innerText="Logout"
 logoutBtn.onclick=logout
 userCorner.appendChild(logoutBtn)
 loadMissions()
 loadLeaderboards()
 startActivePlayersCounter()
+}
+}catch(e){
+console.error("Restore session error:",e)
 }
 }
 
@@ -464,9 +479,11 @@ localStorage.setItem("username",data.username)
 currentToken=data.token
 currentUser=data.username
 
-userCorner.innerHTML=data.username+" "
+userCorner.innerText=data.username
 const logoutBtn=document.createElement("button")
-logoutBtn.className="logout-btn"
+logoutBtn.style.marginLeft="10px"
+logoutBtn.style.padding="8px 12px"
+logoutBtn.style.fontSize="12px"
 logoutBtn.innerText="Logout"
 logoutBtn.onclick=logout
 userCorner.appendChild(logoutBtn)
@@ -477,6 +494,9 @@ dashboard.classList.remove("hidden")
 loadMissions()
 loadLeaderboards()
 startActivePlayersCounter()
+
+document.getElementById("loginEmail").value=""
+document.getElementById("loginPassword").value=""
 
 }catch(e){
 console.error("Login error:",e)
@@ -523,6 +543,11 @@ return
 }
 
 alert("Account created. You can login now.")
+document.getElementById("regDisplay").value=""
+document.getElementById("regEmail").value=""
+document.getElementById("regPassword").value=""
+document.getElementById("termsAgree").checked=false
+document.getElementById("termsAgree").disabled=true
 backChoice()
 
 }catch(e){
