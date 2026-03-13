@@ -112,11 +112,28 @@ border:1px solid #ff2a2a44;
 padding:18px;
 border-radius:10px;
 cursor:pointer;
+position:relative;
 }
 
 .mission-card:hover{
 transform:scale(1.03);
 box-shadow:0 0 15px red;
+}
+
+.mission-card.claimed{
+opacity:0.7;
+}
+
+.claimed-badge{
+position:absolute;
+top:10px;
+right:10px;
+background:#ff2a2a;
+color:white;
+padding:8px 12px;
+border-radius:6px;
+font-size:12px;
+font-weight:bold;
 }
 
 .modal{
@@ -278,6 +295,17 @@ gap:10px;
 margin-bottom:10px;
 }
 
+.mission-description{
+background:#000;
+border:1px solid #333;
+padding:12px;
+border-radius:6px;
+font-size:12px;
+color:#ccc;
+margin-top:10px;
+line-height:1.5;
+}
+
 </style>
 </head>
 
@@ -434,10 +462,6 @@ margin-bottom:10px;
 <input id="missionBounty" type="number" placeholder="Bounty Amount ($)" min="7" oninput="validateBounty()">
 <div id="bountyError" style="color:#ff6666;font-size:12px;margin-top:5px;display:none;margin-bottom:10px">Minimum bounty is $7</div>
 
-<!-- FILE UPLOAD (OPTIONAL) -->
-<label style="display:block;margin-top:10px;margin-bottom:5px;color:#ff3c3c;font-weight:bold">Upload Proof (Image/Video) - Optional</label>
-<input id="missionProof" type="file" accept="image/*,video/*">
-
 </div>
 </div>
 
@@ -493,14 +517,20 @@ Confirm Bounty
 <p><strong>Posted by:</strong> <span id="modalPostedBy"></span></p>
 <div id="expiryDisplay" class="expiry-badge"></div>
 
-<div style="margin-top:15px">
-<label>Submit Proof (Image/Video)</label>
-<input id="proofFile" type="file" accept="image/*,video/*">
+<!-- MISSION DESCRIPTION -->
+<div class="mission-description">
+This mission is open for claims for up to 20 days from the time it is posted. If the bounty remains unclaimed after the 20-day claim window expires, the mission will automatically close and the bounty will be terminated without refund. Successful hunters will receive 80% of the listed bounty amount upon verified completion.
 </div>
 
-<button onclick="submitProof()">Submit Proof</button>
-<button onclick="addBounty()">Add Bounty</button>
-<button onclick="closeMissionModal()">Close</button>
+<!-- PROOF SUBMISSION SECTION (ONLY IN MODAL) -->
+<div id="claimSection" style="margin-top:20px">
+<label style="display:block;margin-bottom:10px;color:#ff3c3c;font-weight:bold">Submit Proof (Image/Video)</label>
+<input id="proofFile" type="file" accept="image/*,video/*">
+<button onclick="submitProof()" style="width:100%;margin-top:10px">Submit Proof</button>
+</div>
+
+<button onclick="addBounty()" style="width:100%;margin-top:10px">Add Bounty</button>
+<button onclick="closeMissionModal()" style="width:100%;margin-top:10px">Close</button>
 
 </div>
 
@@ -867,11 +897,11 @@ document.getElementById("missionTarget").value=""
 selectedMode=null
 selectedConsole=null
 document.getElementById("missionBounty").value=""
-document.getElementById("missionProof").value=""
 document.querySelectorAll(".mode-btn").forEach(btn=>btn.classList.remove("active"))
 document.getElementById("xboxBtn").classList.remove("active")
 document.getElementById("playstationBtn").classList.remove("active")
 validateForm()
+document.getElementById("paypalContainer").innerHTML=""
 loadMissions()
 }
 })
@@ -938,14 +968,27 @@ return
 allMissions.forEach(mission=>{
 const card=document.createElement("div")
 card.className="mission-card"
+
+const isClaimed=mission.status==="claimed"
+if(isClaimed){
+card.classList.add("claimed")
+}
+
 const expiryDays=calculateDaysRemaining(mission.expiresAt)
 const expiryText=expiryDays>=0?`Expires in ${expiryDays} days`:"Expired"
+
+let claimedBadge=""
+if(isClaimed){
+claimedBadge=`<div class="claimed-badge">CLAIMED</div>`
+}
+
 card.innerHTML=`
+${claimedBadge}
 <p><strong>${mission.target}</strong></p>
 <p>${mission.mode}</p>
+<p style="color:#0099ff">${mission.console}</p>
 <p style="color:#ffaa00">$${mission.bounty}</p>
 <p style="font-size:12px;color:#999">by ${mission.postedBy}</p>
-<p style="font-size:11px;color:#0099ff">${mission.console}</p>
 <div style="font-size:11px;color:#ff6666;margin-top:8px">${expiryText}</div>
 `
 card.onclick=()=>openMissionModal(mission)
@@ -982,6 +1025,7 @@ document.getElementById("modalPostedBy").innerText=mission.postedBy
 const expiryDays=calculateDaysRemaining(mission.expiresAt)
 const expiryText=expiryDays>=0?`⏱ Expires in ${expiryDays} days`:"⚠ Expired"
 document.getElementById("expiryDisplay").innerText=expiryText
+document.getElementById("proofFile").value=""
 missionModal.classList.add("show")
 }catch(e){
 console.error("Open mission modal error:",e)
