@@ -184,6 +184,100 @@ justify-content:space-between;
 border-bottom:none;
 }
 
+.console-btn{
+flex:1;
+padding:10px;
+border:2px solid;
+border-radius:6px;
+font-weight:bold;
+cursor:pointer;
+transition:all 0.3s;
+}
+
+.console-btn.xbox{
+background:#107c10;
+border-color:#107c10;
+}
+
+.console-btn.xbox:hover{
+background:#1a8a2e;
+}
+
+.console-btn.xbox.active{
+border-color:#ff2a2a;
+box-shadow:0 0 10px rgba(255,42,42,0.5);
+}
+
+.console-btn.playstation{
+background:#003087;
+border-color:#003087;
+}
+
+.console-btn.playstation:hover{
+background:#005bc5;
+}
+
+.console-btn.playstation.active{
+border-color:#ff2a2a;
+box-shadow:0 0 10px rgba(255,42,42,0.5);
+}
+
+.mode-btn{
+padding:10px 15px;
+background:#333;
+border:1px solid #666;
+border-radius:6px;
+color:white;
+cursor:pointer;
+white-space:nowrap;
+font-weight:bold;
+transition:all 0.3s;
+}
+
+.mode-btn:hover{
+background:#555;
+}
+
+.mode-btn.active{
+background:#ff2a2a;
+border-color:#ff2a2a;
+box-shadow:0 0 10px red;
+}
+
+#confirmBountyBtn{
+transition:all 0.3s;
+width:100%;
+padding:12px;
+background:#666;
+cursor:not-allowed;
+margin-top:15px;
+font-size:16px;
+}
+
+#confirmBountyBtn:not(:disabled){
+background:#ff2a2a;
+cursor:pointer;
+}
+
+#confirmBountyBtn:not(:disabled):hover{
+background:#ff4a4a;
+box-shadow:0 0 10px red;
+}
+
+.mode-container{
+display:flex;
+gap:8px;
+overflow-x:auto;
+padding:5px 0;
+margin-bottom:10px;
+}
+
+.console-container{
+display:flex;
+gap:10px;
+margin-bottom:10px;
+}
+
 </style>
 </head>
 
@@ -306,17 +400,55 @@ border-bottom:none;
 <h2>Post Bounty</h2>
 <div class="flex">
 <div>
-<input id="missionTarget" placeholder="Target (username or task)">
-<input id="missionMode" placeholder="Mode (e.g., Competition, Proof-of-Skill)">
-<input id="missionBounty" type="number" placeholder="Bounty Amount ($)">
+
+<!-- TARGET USERNAME -->
+<input id="missionTarget" placeholder="Target (username or task)" oninput="validateForm()">
+
+<!-- CONSOLE SELECTOR -->
+<div style="margin-bottom:10px">
+<label style="display:block;margin-bottom:5px;color:#ff3c3c;font-weight:bold">Select Console:</label>
+<div class="console-container">
+<button id="xboxBtn" class="console-btn xbox" onclick="selectConsole('xbox')" style="flex:1">
+🎮 Xbox
+</button>
+<button id="playstationBtn" class="console-btn playstation" onclick="selectConsole('playstation')" style="flex:1">
+🎮 PlayStation
+</button>
 </div>
-<div>
-<label>Upload Proof (Image/Video)</label>
+</div>
+
+<!-- MODE SLIDER -->
+<div style="margin-bottom:10px">
+<label style="display:block;margin-bottom:5px;color:#ff3c3c;font-weight:bold">Select Game Mode:</label>
+<div class="mode-container">
+<button class="mode-btn" onclick="selectMode('Park')">Park</button>
+<button class="mode-btn" onclick="selectMode('Theater')">Theater</button>
+<button class="mode-btn" onclick="selectMode('REC')">REC</button>
+<button class="mode-btn" onclick="selectMode('Proving Grounds')">Proving Grounds</button>
+<button class="mode-btn" onclick="selectMode('Pro-AM')">Pro-AM</button>
+</div>
+</div>
+
+<!-- BOUNTY AMOUNT -->
+<label style="display:block;margin-bottom:5px;color:#ff3c3c;font-weight:bold">Bounty Amount ($)</label>
+<input id="missionBounty" type="number" placeholder="Bounty Amount ($)" min="7" oninput="validateBounty()">
+<div id="bountyError" style="color:#ff6666;font-size:12px;margin-top:5px;display:none;margin-bottom:10px">Minimum bounty is $7</div>
+
+<!-- FILE UPLOAD (OPTIONAL) -->
+<label style="display:block;margin-top:10px;margin-bottom:5px;color:#ff3c3c;font-weight:bold">Upload Proof (Image/Video) - Optional</label>
 <input id="missionProof" type="file" accept="image/*,video/*">
-<button onclick="postMission()">Post Mission</button>
+
 </div>
 </div>
-<div id="paypalContainer"></div>
+
+<!-- CONFIRM BOUNTY BUTTON -->
+<button id="confirmBountyBtn" onclick="confirmBounty()" disabled>
+Confirm Bounty
+</button>
+
+<!-- PAYPAL CONTAINER -->
+<div id="paypalContainer" style="margin-top:20px"></div>
+
 </div>
 
 <div class="flex">
@@ -356,6 +488,7 @@ border-bottom:none;
 
 <p><strong>Target:</strong> <span id="modalTarget"></span></p>
 <p><strong>Mode:</strong> <span id="modalMode"></span></p>
+<p><strong>Console:</strong> <span id="modalConsole"></span></p>
 <p><strong>Bounty:</strong> $<span id="modalBounty"></span></p>
 <p><strong>Posted by:</strong> <span id="modalPostedBy"></span></p>
 <div id="expiryDisplay" class="expiry-badge"></div>
@@ -381,6 +514,8 @@ let currentUser=null
 let currentToken=null
 let currentMissionId=null
 let allMissions=[]
+let selectedMode=null
+let selectedConsole=null
 
 function showLogin(){
 authChoice.classList.add("hidden")
@@ -442,6 +577,7 @@ userCorner.appendChild(logoutBtn)
 loadMissions()
 loadLeaderboards()
 startActivePlayersCounter()
+sendHeartbeat()
 }
 }catch(e){
 console.error("Restore session error:",e)
@@ -494,6 +630,7 @@ dashboard.classList.remove("hidden")
 loadMissions()
 loadLeaderboards()
 startActivePlayersCounter()
+sendHeartbeat()
 
 document.getElementById("loginEmail").value=""
 document.getElementById("loginPassword").value=""
@@ -605,6 +742,170 @@ alert("Request failed. Please try again.")
 }
 }
 
+/* MODE SELECTION */
+function selectMode(mode){
+selectedMode=mode
+
+document.querySelectorAll(".mode-btn").forEach(btn=>{
+btn.classList.remove("active")
+})
+event.target.classList.add("active")
+
+validateForm()
+}
+
+/* CONSOLE SELECTION */
+function selectConsole(console){
+selectedConsole=console
+
+document.getElementById("xboxBtn").classList.remove("active")
+document.getElementById("playstationBtn").classList.remove("active")
+
+if(console==="xbox"){
+document.getElementById("xboxBtn").classList.add("active")
+}else{
+document.getElementById("playstationBtn").classList.add("active")
+}
+
+validateForm()
+}
+
+/* BOUNTY VALIDATION */
+function validateBounty(){
+const bountyInput=document.getElementById("missionBounty")
+const bountyError=document.getElementById("bountyError")
+const bounty=parseFloat(bountyInput.value)
+
+if(bountyInput.value && bounty<7){
+bountyError.style.display="block"
+}else{
+bountyError.style.display="none"
+}
+
+validateForm()
+}
+
+/* FORM VALIDATION */
+function validateForm(){
+const target=document.getElementById("missionTarget").value.trim()
+const bounty=parseFloat(document.getElementById("missionBounty").value)
+const confirmBtn=document.getElementById("confirmBountyBtn")
+
+const isValid=target && selectedMode && selectedConsole && bounty>=7
+
+if(isValid){
+confirmBtn.disabled=false
+confirmBtn.style.background="#ff2a2a"
+confirmBtn.style.cursor="pointer"
+}else{
+confirmBtn.disabled=true
+confirmBtn.style.background="#666"
+confirmBtn.style.cursor="not-allowed"
+}
+}
+
+/* CONFIRM BOUNTY - INITIATE PAYPAL */
+async function confirmBounty(){
+const target=document.getElementById("missionTarget").value
+const mode=selectedMode
+const console=selectedConsole
+const bounty=parseFloat(document.getElementById("missionBounty").value)
+
+if(!target || !mode || !console || bounty<7){
+alert("Please fill all required fields")
+return
+}
+
+try{
+const orderRes=await fetch(BASE+"/create-order",{
+method:"POST",
+headers:{
+"Authorization":"Bearer "+currentToken,
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+target,
+mode,
+console,
+amount:bounty
+})
+})
+
+const order=await orderRes.json()
+
+if(order.error){
+alert(order.error)
+return
+}
+
+paypal.Buttons({
+createOrder:function(){
+return order.id
+},
+onApprove:function(data){
+return fetch(BASE+"/capture-order",{
+method:"POST",
+headers:{
+"Authorization":"Bearer "+currentToken,
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+orderId:data.orderID,
+target,
+mode,
+console,
+amount:bounty
+})
+})
+.then(res=>res.json())
+.then(data=>{
+if(data.error){
+alert(data.error)
+}else{
+alert("Mission posted successfully!")
+document.getElementById("missionTarget").value=""
+selectedMode=null
+selectedConsole=null
+document.getElementById("missionBounty").value=""
+document.getElementById("missionProof").value=""
+document.querySelectorAll(".mode-btn").forEach(btn=>btn.classList.remove("active"))
+document.getElementById("xboxBtn").classList.remove("active")
+document.getElementById("playstationBtn").classList.remove("active")
+validateForm()
+loadMissions()
+}
+})
+},
+onError:function(){
+alert("Payment failed. Please try again.")
+}
+}).render("#paypalContainer")
+}catch(e){
+console.error("Confirm bounty error:",e)
+alert("Failed to process bounty")
+}
+}
+
+/* HEARTBEAT - TRACK ACTIVE PLAYERS */
+function sendHeartbeat(){
+try{
+if(currentUser){
+fetch(BASE+"/heartbeat",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({username:currentUser})
+}).catch(e=>console.warn("Heartbeat error:",e))
+}
+}catch(e){
+console.error("Heartbeat error:",e)
+}
+}
+
+/* SEND HEARTBEAT EVERY 30 SECONDS */
+setInterval(sendHeartbeat,30000)
+
 async function loadMissions(){
 try{
 const res=await fetch(BASE+"/missions",{
@@ -644,6 +945,7 @@ card.innerHTML=`
 <p>${mission.mode}</p>
 <p style="color:#ffaa00">$${mission.bounty}</p>
 <p style="font-size:12px;color:#999">by ${mission.postedBy}</p>
+<p style="font-size:11px;color:#0099ff">${mission.console}</p>
 <div style="font-size:11px;color:#ff6666;margin-top:8px">${expiryText}</div>
 `
 card.onclick=()=>openMissionModal(mission)
@@ -674,6 +976,7 @@ currentMissionId=mission.id||mission._id
 document.getElementById("modalMissionTitle").innerText=mission.target
 document.getElementById("modalTarget").innerText=mission.target
 document.getElementById("modalMode").innerText=mission.mode
+document.getElementById("modalConsole").innerText=mission.console
 document.getElementById("modalBounty").innerText=mission.bounty
 document.getElementById("modalPostedBy").innerText=mission.postedBy
 const expiryDays=calculateDaysRemaining(mission.expiresAt)
@@ -759,44 +1062,6 @@ loadMissions()
 }catch(e){
 console.error("Add bounty error:",e)
 alert("Failed to add bounty.")
-}
-}
-
-async function postMission(){
-try{
-const target=document.getElementById("missionTarget").value
-const mode=document.getElementById("missionMode").value
-const bounty=document.getElementById("missionBounty").value
-
-if(!target || !mode || !bounty){
-alert("Fill all fields")
-return
-}
-
-const res=await fetch(BASE+"/missions",{
-method:"POST",
-headers:{
-"Authorization":"Bearer "+currentToken,
-"Content-Type":"application/json"
-},
-body:JSON.stringify({target,mode,bounty})
-})
-
-const data=await res.json()
-
-if(data.error){
-alert(data.error)
-}else{
-alert("Mission posted!")
-document.getElementById("missionTarget").value=""
-document.getElementById("missionMode").value=""
-document.getElementById("missionBounty").value=""
-document.getElementById("missionProof").value=""
-loadMissions()
-}
-}catch(e){
-console.error("Post mission error:",e)
-alert("Failed to post mission.")
 }
 }
 
@@ -900,6 +1165,16 @@ document.addEventListener("DOMContentLoaded",()=>{
 try{
 setupTermsScroll()
 restoreSession()
+
+const targetInput=document.getElementById("missionTarget")
+if(targetInput){
+targetInput.addEventListener("input",validateForm)
+}
+
+const bountyInput=document.getElementById("missionBounty")
+if(bountyInput){
+bountyInput.addEventListener("input",validateBounty)
+}
 }catch(e){
 console.error("DOMContentLoaded error:",e)
 }
